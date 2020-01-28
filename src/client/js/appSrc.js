@@ -8,6 +8,30 @@ var reason;
 var currentFrame = 0;
 var comArr = [];
 var comIndex = 0;
+var characterSprites = [];
+var characterAmount = 38;
+var ballSprites = [];
+var disconnected = false;
+
+function prepCharacterSprites() {
+    for (i = 0; i <= characterAmount; i++) {
+        characterSprites[i] = new Image();
+    }
+}
+
+function loadCharacterSprites(sprite) {
+    if (!sprite) 
+        characterSprites[0].src = "/img/0.png";
+    else if (characterSprites[sprite] && characterSprites[sprite].src == "") 
+        characterSprites[sprite].src = "/img/" + sprite + ".png";
+    }
+
+function loadBallSprites() {
+    for (i = 0; i <= 9; i++) {
+        ballSprites[i] = new Image();
+        ballSprites[i].src = "/img/ball" + i + ".png";
+    }
+}
 
 var debug = function (args) {
     if (console && console.log) {
@@ -32,33 +56,50 @@ function emojiAlignment(resizing) {
     var element;
     if (global.usingMobileVersion && !resizing) {
         element = document.getElementById('smileyNum');
-        element.parentNode.removeChild(element);
+        element
+            .parentNode
+            .removeChild(element);
         element = document.getElementById('poopyNum');
-        element.parentNode.removeChild(element);
+        element
+            .parentNode
+            .removeChild(element);
         element = document.getElementById('fingerNum');
-        element.parentNode.removeChild(element);
+        element
+            .parentNode
+            .removeChild(element);
         element = document.getElementById('xdNum');
-        element.parentNode.removeChild(element);
+        element
+            .parentNode
+            .removeChild(element);
         element = document.getElementById('hmmmNum');
-        element.parentNode.removeChild(element);
+        element
+            .parentNode
+            .removeChild(element);
         element = document.getElementById('angryNum');
-        element.parentNode.removeChild(element);
+        element
+            .parentNode
+            .removeChild(element);
     }
     if (!global.usingMobileVersion && element != null) {
         element = document.getElementById('fullscreen');
-        element.parentNode.removeChild(element);
+        element
+            .parentNode
+            .removeChild(element);
     }
     // if (global.buttonAlignment == 'left') {
-    //     document.getElementById('smiley').style.left = (global.screenWidth - 40) + 'px';
-    //     document.getElementById('poopy').style.left = (global.screenWidth - 40) + 'px';
-    //     document.getElementById('finger').style.left = (global.screenWidth - 40) + 'px';
-    //     document.getElementById('xd').style.left = (global.screenWidth - 40) + 'px';
-    //     document.getElementById('hmmm').style.left = (global.screenWidth - 40) + 'px';
-    //     document.getElementById('angry').style.left = (global.screenWidth - 40) + 'px';
-    // }
+    // document.getElementById('smiley').style.left = (global.screenWidth - 40) +
+    // 'px';     document.getElementById('poopy').style.left = (global.screenWidth -
+    // 40) + 'px';     document.getElementById('finger').style.left =
+    // (global.screenWidth - 40) + 'px';
+    // document.getElementById('xd').style.left = (global.screenWidth - 40) + 'px';
+    //    document.getElementById('hmmm').style.left = (global.screenWidth - 40) +
+    // 'px';     document.getElementById('angry').style.left = (global.screenWidth -
+    // 40) + 'px'; }
 }
 
 function startGame() {
+    prepCharacterSprites();
+    loadBallSprites();
     initCommercialImages(global.commercialCount);
     //window.alert(window.innerWidth+"x"+window.innerHeight);
     global.playerName = "";
@@ -77,11 +118,12 @@ function startGame() {
     emojiAlignment(false);
 
     //document.getElementById('startMenuWrapper').style.maxHeight = '0px';
-    document.getElementById('gameAreaWrapper').style.opacity = 1;
+    document
+        .getElementById('gameAreaWrapper')
+        .style
+        .opacity = 1;
     if (!socket) {
-        socket = io({
-            query: "type=player"
-        });
+        socket = io({query: "type=player"});
         setupSocket(socket);
     }
     if (!global.animLoopHandle) {
@@ -92,12 +134,9 @@ function startGame() {
     global.socket = socket;
 }
 
-
 window.onload = function () {
     startGame();
 };
-
-
 
 var playerConfig = {
     border: 6,
@@ -148,12 +187,12 @@ var ball = {
     x: 0,
     y: 0,
     frame: 0,
-    speed: 1,
+    speed: 1
 };
 
 var target = {
     x: global.screenWidth / 2,
-    y: global.screenHeight / 2,
+    y: global.screenHeight / 2
 };
 global.target = target;
 
@@ -161,7 +200,6 @@ window.canvas = new Canvas();
 
 var c = window.canvas.cv;
 var graph = c.getContext('2d');
-
 
 $('body').on('contextmenu', '#cvs', function (e) {
     return false;
@@ -173,15 +211,15 @@ $('body').on('contextmenu', '#emoji', function (e) {
     return false;
 });
 
-
 // socket stuff.
 function setupSocket(socket) {
     // Handle ping.
-    socket.on('pongcheck', function () {
-        var latency = Date.now() - global.startPingTime;
-        // debug('Latency: ' + latency + 'ms');
-        console.log('Latency: ' + latency + 'ms');
-    });
+    socket
+        .on('pongcheck', function () {
+            var latency = Date.now() - global.startPingTime;
+            // debug('Latency: ' + latency + 'ms');
+            console.log('Latency: ' + latency + 'ms');
+        });
 
     // Handle error.
     socket.on('connect_failed', function () {
@@ -226,38 +264,38 @@ function setupSocket(socket) {
         resize();
     });
 
-
     // Handle movement.
     socket.on('3', function (userData, serverBall, serverGoalkeepers) {
         var playerData;
         for (var i = 0; i < userData.length; i++) {
-            if (typeof (userData[i].id) == "undefined") {
+            if (typeof(userData[i].id) == "undefined") {
                 playerData = userData[i];
                 i = userData.length;
             }
         }
-        var xoffset = player.x - playerData.x;
-        var yoffset = player.y - playerData.y;
+        // var xoffset = player.x - playerData.x; var yoffset = player.y - playerData.y;
 
         player.x = playerData.x;
         player.y = playerData.y;
-        player.xoffset = isNaN(xoffset) ? 0 : xoffset;
-        player.yoffset = isNaN(yoffset) ? 0 : yoffset;
+        // player.xoffset = isNaN(xoffset) ? 0 : xoffset; player.yoffset =
+        // isNaN(yoffset) ? 0 : yoffset;
+
         users = userData;
         ball = serverBall;
         goalkeepers = serverGoalkeepers;
     });
 
-
     //slower socket for non-movement information
 
     socket.on('4', function (serverScore, serverUsers) {
-        if(serverScore){
+        if (serverScore) {
             score = serverScore;
         }
         usersExpanded = serverUsers;
+        usersExpanded.forEach(u => {
+            loadCharacterSprites(u.skinsprite);
+        });
     });
-
 
     socket.on('kick', function (data) {
         global.gameStart = false;
@@ -268,9 +306,13 @@ function setupSocket(socket) {
 
     socket.on('goal', function (data) {
         var soundId = "goal" + (Math.floor(Math.random() * (4 - 1)) + 1);
-        console.log(soundId);
-        document.getElementById(soundId).volume = 0.2;
-        document.getElementById(soundId).play();
+        // console.log(soundId);
+        document
+            .getElementById(soundId)
+            .volume = 0.2;
+        document
+            .getElementById(soundId)
+            .play();
     });
 
 }
@@ -314,14 +356,14 @@ function drawBall(ball) {
     graph.strokeStyle = 'hsl(120, 0%, 70%)';
     graph.fillStyle = 'hsl(120, 0%, 75%)';
     graph.lineWidth = playerConfig.border + 10;
-    drawCircle(ball.x - player.x + global.screenWidth / 2,
-        ball.y - player.y + global.screenHeight / 2,
-        10 - 5, 18 + (~~(10 / 5)));
-    var character = new Image();
-    character.src = "/img/ball" + (Math.floor(ball.frame / 10) % 10) + ".png";
+    drawCircle(ball.x - player.x + global.screenWidth / 2, ball.y - player.y + global.screenHeight / 2, 10 - 5, 18 + (~~ (10 / 5)));
+    // var character = new Image(); character.src = "/img/ball" +
+    // (Math.floor(ball.frame / 10) % 10) + ".png";
     var ballX = ball.x - player.x + global.screenWidth / 2;
     var ballY = ball.y - player.y + global.screenHeight / 2;
-    graph.drawImage(character, ballX - 15, ballY - 15, 30, 30);
+    // graph.drawImage(character, ballX - 15, ballY - 15, 30, 30);
+
+    graph.drawImage(ballSprites[(Math.floor(ball.frame / 10) % 10)], ballX - 15, ballY - 15, 30, 30);
 }
 
 function drawGoalkeeper(goalkeepers) {
@@ -332,28 +374,21 @@ function drawGoalkeeper(goalkeepers) {
     var handDist = 0;
     var x = goalkeepers[0].position.x - player.x + global.screenWidth / 2;
     var y = goalkeepers[0].position.y - player.y + global.screenHeight / 2;
-    drawCircle(x,
-        y,
-        global.goalkeeperRadius, 18);
+    drawCircle(x, y, global.goalkeeperRadius, 18);
 
     graph.fillStyle = playerConfig.textColor;
     graph.font = 'bold ' + fontSize + 'px arial';
 
-
     graph.strokeText("💪😂👊", x - handDist, y);
     graph.fillText("💪😂👊", x - handDist, y);
-
 
     x = goalkeepers[1].position.x - player.x + global.screenWidth / 2;
     y = goalkeepers[1].position.y - player.y + global.screenHeight / 2;
 
-
     graph.strokeStyle = 'hsl(0, 100%, 45%)';
     graph.fillStyle = 'hsl(0, 100%, 50%)';
     graph.lineWidth = playerConfig.border + 10;
-    drawCircle(x,
-        y,
-        global.goalkeeperRadius, 18);
+    drawCircle(x, y, global.goalkeeperRadius, 18);
 
     graph.strokeText("💪😂👊", x - handDist, y);
     graph.fillText("💪😂👊", x - handDist, y);
@@ -362,7 +397,7 @@ function drawGoalkeeper(goalkeepers) {
 function drawGoalDirection() {
     var userCurrent;
     for (var i = 0; i < usersExpanded.length; i++) {
-        if (usersExpanded[i].id == player.id || usersExpanded[i].id == player.idz) {
+        if (usersExpanded[i].x == player.x && usersExpanded[i].y == player.y) {
             userCurrent = usersExpanded[i];
             break;
         }
@@ -387,13 +422,13 @@ function drawGoalDirection() {
         emojiDeltaX = ((global.gameWidth - player.x) * 60) / distance;
         emojiDeltaY = ((global.gameHeight / 2 - player.y) * 60) / distance;
     }
-    if (emojiDeltaX > 60)
+    if (emojiDeltaX > 60) 
         emojiDeltaX = 60;
-    if (emojiDeltaX < -60)
+    if (emojiDeltaX < -60) 
         emojiDeltaX = -60;
-    if (emojiDeltaY > 60)
+    if (emojiDeltaY > 60) 
         emojiDeltaY = 60;
-    if (emojiDeltaY < -60)
+    if (emojiDeltaY < -60) 
         emojiDeltaY = -60;
     graph.fillText('🥅', global.screenWidth / 2 + emojiDeltaX, global.screenHeight / 2 + emojiDeltaY);
 }
@@ -430,18 +465,14 @@ function drawScore(score) {
 
 function drawButton() {
 
-
     var buttonSize = window.canvas.cv.width / 12;
 
     graph.strokeStyle = 'hsl(280, 100%, 45%)';
     graph.fillStyle = 'hsl(280, 100%, 50%)';
     graph.lineWidth = playerConfig.border + 10;
-    drawCircle(global.screenWidth - buttonSize, global.screenHeight - buttonSize,
-        buttonSize, 18);
-    drawCircle(global.screenWidth / 2, global.screenHeight - buttonSize,
-        buttonSize, 18);
-    drawCircle(buttonSize, global.screenHeight - buttonSize,
-        buttonSize, 18);
+    drawCircle(global.screenWidth - buttonSize, global.screenHeight - buttonSize, buttonSize, 18);
+    drawCircle(global.screenWidth / 2, global.screenHeight - buttonSize, buttonSize, 18);
+    drawCircle(buttonSize, global.screenHeight - buttonSize, buttonSize, 18);
     var fontSize = Math.max(40 / 3, 12);
     graph.lineWidth = playerConfig.textBorderSize;
     graph.fillStyle = playerConfig.textColor;
@@ -469,7 +500,6 @@ function drawButton() {
     graph.font = 'bold ' + fontSize + 'px sans-serif';
 }
 
-
 function drawPlayers() {
     var start = {
         x: player.x - (global.screenWidth / 2),
@@ -488,9 +518,7 @@ function drawPlayers() {
             }
         }
 
-
-
-        var points = 30 + ~~(30 / 5);
+        var points = 30 + ~~ (30 / 5);
         var increase = Math.PI * 2 / points;
         if (cellCurrent.hue != undefined) {
             graph.strokeStyle = 'hsl(' + cellCurrent.hue + ', 40%, 45%)';
@@ -515,16 +543,12 @@ function drawPlayers() {
 
             x = 28 * Math.cos(global.spin) + circle.x;
             y = 28 * Math.sin(global.spin) + circle.y;
-            if (typeof (userCurrent.id) == "undefined") {
-                x = valueInRange(-userCurrent.x + global.screenWidth / 2,
-                    global.gameWidth - userCurrent.x + global.screenWidth / 2, x);
-                y = valueInRange(-userCurrent.y + global.screenHeight / 2,
-                    global.gameHeight - userCurrent.y + global.screenHeight / 2, y);
+            if (typeof(userCurrent.id) == "undefined") {
+                x = valueInRange(-userCurrent.x + global.screenWidth / 2, global.gameWidth - userCurrent.x + global.screenWidth / 2, x);
+                y = valueInRange(-userCurrent.y + global.screenHeight / 2, global.gameHeight - userCurrent.y + global.screenHeight / 2, y);
             } else {
-                x = valueInRange(-userCurrent.x - player.x + global.screenWidth / 2 + (40 / 3),
-                    global.gameWidth - userCurrent.x + global.gameWidth - player.x + global.screenWidth / 2 - (40 / 3), x);
-                y = valueInRange(-userCurrent.y - player.y + global.screenHeight / 2 + (40 / 3),
-                    global.gameHeight - userCurrent.y + global.gameHeight - player.y + global.screenHeight / 2 - (40 / 3), y);
+                x = valueInRange(-userCurrent.x - player.x + global.screenWidth / 2 + (40 / 3), global.gameWidth - userCurrent.x + global.gameWidth - player.x + global.screenWidth / 2 - (40 / 3), x);
+                y = valueInRange(-userCurrent.y - player.y + global.screenHeight / 2 + (40 / 3), global.gameHeight - userCurrent.y + global.gameHeight - player.y + global.screenHeight / 2 - (40 / 3), y);
             }
             global.spin += increase;
             xstore[i] = x;
@@ -601,7 +625,8 @@ function drawPlayers() {
             graph.strokeText(nameCell, circle.x, circle.y);
             graph.fillText(nameCell, circle.x, circle.y);
             graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
-            if (nameCell.length === 0) fontSize = 0;
+            if (nameCell.length === 0) 
+                fontSize = 0;
             graph.strokeText(Math.round(30), circle.x, circle.y + fontSize);
             graph.fillText(Math.round(30), circle.x, circle.y + fontSize);
         }
@@ -618,16 +643,21 @@ function drawPlayers() {
         var width = sheetWidth / cols;
         var height = sheetHeight / rows;
 
-        var character = new Image();
-        if (cellCurrent.skinsprite != null && cellCurrent.skinsprite != "")
-            character.src = "/img/" + cellCurrent.skinsprite + ".png";
-        else
-            character.src = "/img/0.png";
         srcX = (userCurrent.frame % 12) * width;
         srcY = Math.floor(userCurrent.frame / 12) * height;
-        graph.drawImage(character, srcX, srcY, width, height, circle.x - 60, circle.y - 190, width, height);
+
+        if (cellCurrent.skinsprite != null && cellCurrent.skinsprite != "") 
+            graph.drawImage(characterSprites[cellCurrent.skinsprite], srcX, srcY, width, height, circle.x - 60, circle.y - 190, width, height);
+        else 
+            graph.drawImage(characterSprites[0], srcX, srcY, width, height, circle.x - 60, circle.y - 190, width, height);
+
+            // var character = new Image(); if (cellCurrent.skinsprite != null &&
+            // cellCurrent.skinsprite != "")     character.src = "/img/" +
+            // cellCurrent.skinsprite + ".png"; else     character.src = "/img/0.png";
+            // graph.drawImage(character, srcX, srcY, width, height, circle.x - 60, circle.y
+            // - 190, width, height);
+        }
     }
-}
 
 function valueInRange(min, max, value) {
     return Math.min(max, Math.max(min, value));
@@ -651,16 +681,16 @@ function drawGoalText(ball) {
         graph.textBaseline = 'middle';
         graph.font = 'bold ' + 72 + 'px sans-serif';
         var scoringTeam = "";
-        if (ball.x < 0)
+        if (ball.x < 0) 
             scoringTeam = "RED";
-        else
+        else 
             scoringTeam = "BLUE";
         graph.strokeText('GOAL! ' + scoringTeam + ' SCORED!', global.screenWidth / 2, global.screenHeight / 2);
         graph.fillText('GOAL! ' + scoringTeam + ' SCORED!', global.screenWidth / 2, global.screenHeight / 2);
         var winners = "";
-        if (score.blue == 10)
+        if (score.blue == 10) 
             winners = 'BLUE';
-        if (score.red == 10)
+        if (score.red == 10) 
             winners = 'RED';
         if (winners != "") {
             graph.strokeText(winners + ' TEAM WON THE GAME!', global.screenWidth / 2, global.screenHeight / 2 + 100);
@@ -687,7 +717,9 @@ function drawborder() {
 
     // Mid-vertical
     graph.beginPath();
-    graph.moveTo(global.gameWidth / 2 + global.screenWidth / 2 - player.x, 0 ? player.y > global.screenHeight / 2 : global.screenHeight / 2 - player.y);
+    graph.moveTo(global.gameWidth / 2 + global.screenWidth / 2 - player.x, 0
+        ? player.y > global.screenHeight / 2
+        : global.screenHeight / 2 - player.y);
     graph.lineTo(global.gameWidth / 2 + global.screenWidth / 2 - player.x, global.gameHeight + global.screenHeight / 2 - player.y);
     graph.strokeStyle = global.lineColor;
     graph.stroke();
@@ -695,7 +727,9 @@ function drawborder() {
     // Left-vertical.
     if (player.x <= global.screenWidth / 2) {
         graph.beginPath();
-        graph.moveTo(global.screenWidth / 2 - player.x, 0 ? player.y > global.screenHeight / 2 : global.screenHeight / 2 - player.y);
+        graph.moveTo(global.screenWidth / 2 - player.x, 0
+            ? player.y > global.screenHeight / 2
+            : global.screenHeight / 2 - player.y);
         graph.lineTo(global.screenWidth / 2 - player.x, global.gameHeight + global.screenHeight / 2 - player.y);
         graph.strokeStyle = global.lineColor;
         graph.stroke();
@@ -704,7 +738,9 @@ function drawborder() {
     // Top-horizontal.
     if (player.y <= global.screenHeight / 2) {
         graph.beginPath();
-        graph.moveTo(0 ? player.x > global.screenWidth / 2 : global.screenWidth / 2 - player.x, global.screenHeight / 2 - player.y);
+        graph.moveTo(0
+            ? player.x > global.screenWidth / 2
+            : global.screenWidth / 2 - player.x, global.screenHeight / 2 - player.y);
         graph.lineTo(global.gameWidth + global.screenWidth / 2 - player.x, global.screenHeight / 2 - player.y);
         graph.strokeStyle = global.lineColor;
         graph.stroke();
@@ -713,10 +749,8 @@ function drawborder() {
     // Right-vertical.
     if (global.gameWidth - player.x <= global.screenWidth / 2) {
         graph.beginPath();
-        graph.moveTo(global.gameWidth + global.screenWidth / 2 - player.x,
-            global.screenHeight / 2 - player.y);
-        graph.lineTo(global.gameWidth + global.screenWidth / 2 - player.x,
-            global.gameHeight + global.screenHeight / 2 - player.y);
+        graph.moveTo(global.gameWidth + global.screenWidth / 2 - player.x, global.screenHeight / 2 - player.y);
+        graph.lineTo(global.gameWidth + global.screenWidth / 2 - player.x, global.gameHeight + global.screenHeight / 2 - player.y);
         graph.strokeStyle = global.lineColor;
         graph.stroke();
     }
@@ -724,31 +758,24 @@ function drawborder() {
     // Bottom-horizontal.
     if (global.gameHeight - player.y <= global.screenHeight / 2) {
         graph.beginPath();
-        graph.moveTo(global.gameWidth + global.screenWidth / 2 - player.x,
-            global.gameHeight + global.screenHeight / 2 - player.y);
-        graph.lineTo(global.screenWidth / 2 - player.x,
-            global.gameHeight + global.screenHeight / 2 - player.y);
+        graph.moveTo(global.gameWidth + global.screenWidth / 2 - player.x, global.gameHeight + global.screenHeight / 2 - player.y);
+        graph.lineTo(global.screenWidth / 2 - player.x, global.gameHeight + global.screenHeight / 2 - player.y);
         graph.strokeStyle = global.lineColor;
         graph.stroke();
     }
 }
 
 window.requestAnimFrame = (function () {
-    return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function (callback) {
-            window.setTimeout(callback, 1000 / 60);
-        };
+    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+        window.setTimeout(callback, 1000 / 60);
+    };
 })();
 
 window.cancelAnimFrame = (function (handle) {
-    return window.cancelAnimationFrame ||
-        window.mozCancelAnimationFrame;
+    return window.cancelAnimationFrame || window.mozCancelAnimationFrame;
 })();
 
-function pingCheck(){
+function pingCheck() {
     global.startPingTime = Date.now();
     socket.emit('pingcheck');
 }
@@ -782,9 +809,9 @@ function gameLoop() {
             drawPlayers();
             drawGoalText(ball);
             drawBall(ball);
-            if (global.usingMobileVersion)
+            if (global.usingMobileVersion) 
                 drawButton();
-
+            
             socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
 
         } else {
@@ -797,32 +824,47 @@ function gameLoop() {
             graph.fillText('Loading...', global.screenWidth / 2, global.screenHeight / 2);
         }
     } else {
-        graph.fillStyle = '#333333';
-        graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
+        if (!disconnected) {
+            disconnected = true; //this is to prevent GPU from working while disconnected
+            graph.fillStyle = '#333333';
+            graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
 
-        graph.textAlign = 'center';
-        graph.fillStyle = '#FFFFFF';
-        graph.font = 'bold 30px sans-serif';
-        if (global.kicked) {
-            if (reason !== '') {
-                graph.fillText('You were disconnected due to ' + reason, global.screenWidth / 2, global.screenHeight / 2 - 20);
+            graph.textAlign = 'center';
+            graph.fillStyle = '#FFFFFF';
+            graph.font = 'bold 30px sans-serif';
+            if (global.kicked) {
+                if (reason !== '') {
+                    graph.fillText('You were disconnected due to ' + reason, global.screenWidth / 2, global.screenHeight / 2 - 20);
+                } else {
+                    graph.fillText('You were kicked!', global.screenWidth / 2, global.screenHeight / 2);
+                }
             } else {
-                graph.fillText('You were kicked!', global.screenWidth / 2, global.screenHeight / 2);
+                graph.fillText('Disconnected!', global.screenWidth / 2, global.screenHeight / 2);
             }
-        } else {
-            graph.fillText('Disconnected!', global.screenWidth / 2, global.screenHeight / 2);
         }
     }
 }
 
 window.addEventListener('resize', resize);
 
-document.getElementById('smiley').addEventListener('touchstart', sendEmoji);
-document.getElementById('poopy').addEventListener('touchstart', sendEmoji);
-document.getElementById('finger').addEventListener('touchstart', sendEmoji);
-document.getElementById('xd').addEventListener('touchstart', sendEmoji);
-document.getElementById('hmmm').addEventListener('touchstart', sendEmoji);
-document.getElementById('angry').addEventListener('touchstart', sendEmoji);
+document
+    .getElementById('smiley')
+    .addEventListener('touchstart', sendEmoji);
+document
+    .getElementById('poopy')
+    .addEventListener('touchstart', sendEmoji);
+document
+    .getElementById('finger')
+    .addEventListener('touchstart', sendEmoji);
+document
+    .getElementById('xd')
+    .addEventListener('touchstart', sendEmoji);
+document
+    .getElementById('hmmm')
+    .addEventListener('touchstart', sendEmoji);
+document
+    .getElementById('angry')
+    .addEventListener('touchstart', sendEmoji);
 
 function sendEmoji(e) {
     //console.log(e.srcElement.id);
@@ -849,11 +891,11 @@ function sendEmoji(e) {
 }
 
 function resize() {
-    if (!socket) return;
-
+    if (!socket) 
+        return;
+    
     player.screenWidth = c.width = global.screenWidth = window.innerWidth;
     player.screenHeight = c.height = global.screenHeight = window.innerHeight;
-
 
     emojiAlignment(true);
 

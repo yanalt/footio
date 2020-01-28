@@ -436,7 +436,7 @@ io
             x: 0,
             y: 0
         };
-
+        console.log(socket.id);
         var currentPlayer = {
             id: socket.id,
             skinsprite: "",
@@ -783,7 +783,7 @@ function checkAssist(team) {
     });
     // console.log(bestFriendDistanceFromKeeper + ">" + myDistanceFromKeeper)
     if (bestFriendDistanceFromKeeper > myDistanceFromKeeper) {
-        console.log("should assist here m8!");
+        // console.log("should assist here m8!");
         return bestFriendPos;
     } else {
         return false;
@@ -823,21 +823,24 @@ function controlBots() {
     // friendly bots should stay at a distance while close-by enemies should chase
     // when the ball is on the loose, close-by bots should move towards the ball
     //
-    if (chasers[0] < 0) 
+    // if (chasers[0] < 0) 
         chasers[0] = 0;
-    if (chasers[1] < 0) 
+    // if (chasers[1] < 0) 
         chasers[1] = 0;
-    if (gatherers[0] < 0) 
+    // if (gatherers[0] < 0) 
         gatherers[0] = 0;
-    if (gatherers[1] < 0) 
+    // if (gatherers[1] < 0) 
         gatherers[1] = 0;
     users.forEach(u => {
         if (u.command == 6) 
             gatherers[u.team]++;
+        if (u.command == 5) 
+            chasers[u.team]++;
         }
+        
     );
     for (let i = 0; i < users.length; i++) {
-        users[i].name = users[i].x + "," + users[i].y;
+        // users[i].name = users[i].x + "," + users[i].y;
         if (users[i].isBot) {
             if (Math.abs(users[i].target.x) < 1 && Math.abs(users[i].target.y) < 1) {
                 users[i].command = -1;
@@ -848,21 +851,15 @@ function controlBots() {
             if (users[i].team == controllingTeam) {
                 if (!users[i].carrier) {
                     if (users[i].command != 1 - users[i].team) {
-                        if (users[i].command == 5) 
-                            chasers[users[i].team]--;
                         users[i].command = 1 - users[i].team; //blue(0) will attack towards red side (1-0=1) and vice versa
                         users[i].absTarget = util.randomTeamPosition(c.playerRadius, users[i].command);
                     }
                 } else {
                     if ((users[i].team == 1 && users[i].x < c.goalWidth / 2 + 200) || (users[i].team == 0 && users[i].x > c.gameWidth - (c.goalWidth / 2 + 200))) {
                         if (users[i].command != 4) {
-                            if (users[i].command == 5) 
-                                chasers[users[i].team]--;
                             users[i].command = 4;
                         }
                     } else {
-                        if (users[i].command == 5) 
-                            chasers[users[i].team]--;
                         users[i].command = 1 - users[i].team + 2; //blue(0) will attack towards red goal (3-0=3) and vice versa
                     }
                 }
@@ -879,9 +876,10 @@ function controlBots() {
                     }
                 }
             }
-            if (util.getRealDistance(users[i], ball) < 400 && ball.isLoose && gatherers[users[i].team] < 2) { //if he is close enough, then gather a loose ball
+            if (gatherers[users[i].team]<2&& util.getRealDistance(users[i], ball) < 400 && ball.isLoose) { //if he is close enough, then gather a loose ball
                 // console.log(util.getDistance(users[i], ball)); console.log(ball.isLoose);
                 users[i].command = 6;
+                gatherers[users[i].team]++;
             }
 
             //console.log("blue - "+chasers[0]+", red-"+chasers[1]);
@@ -966,13 +964,14 @@ function controlBots() {
                 users[i].command = users[i].team + 1;
             }
 
-            users[i].name = "BOT " + commandString;
+            users[i].name = "BOT";
         }
     }
 }
 
 function balanceBots() {
-    if (users.length < 8) {
+    // console.log(chasers[0] + "," +chasers[1] + " === "+gatherers[0] + ","+ gatherers[1]);
+    if (users.length < 19) {
 
         bot.id--;
         bot.hue = teams[0].player_amount > teams[1].player_amount
@@ -1011,7 +1010,7 @@ function balanceBots() {
         });
         teams[bot.team].player_amount++;
 
-    } else if (users.length > 10) {
+    } else if (users.length > 19) {
         for (let i = users.length - 1; i >= 0; --i) {
             if (users[i].id == bot.id) {
                 users.splice(i, 1);
@@ -1040,13 +1039,13 @@ function gameloop() {
 
         users.forEach(function (u) {
             if (!u.isBot) {
-                addToBandWidth({
-                    a: {
-                        blue: teams[0].score,
-                        red: teams[1].score
-                    },
-                    b: users
-                });
+                // addToBandWidth({
+                //     a: {
+                //         blue: teams[0].score,
+                //         red: teams[1].score
+                //     },
+                //     b: users
+                // });
                 sockets[u.id].emit('4', {
                     blue: teams[0].score,
                     red: teams[1].score
@@ -1057,7 +1056,7 @@ function gameloop() {
 }
 
 function resetEmoji() {
-    chasersFix(); //I put this here because I don't want to check this too frequently ======> make it independant
+    // chasersFix(); //I put this here because I don't want to check this too frequently ======> make it independant
     if (users.length > 0) {
         //balanceBots();
         users
@@ -1144,7 +1143,7 @@ function sendUpdates() {
                     frame: ball.frame
                 };
                 sockets[u.id].emit('3', visibleCells, visibleBall, goalkeepers);
-                addToBandWidth({a: '3', b: visibleCells, c: visibleBall, d: goalkeepers});
+                // addToBandWidth({a: '3', b: visibleCells, c: visibleBall, d: goalkeepers});
 
             }
         });
@@ -1217,7 +1216,7 @@ setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
 setInterval(afkCheck, 500000); //change this to 1 minute
-setInterval(bandwidthCheck, bandWidthIteration);
+// setInterval(bandwidthCheck, bandWidthIteration);
 
 if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
     http
