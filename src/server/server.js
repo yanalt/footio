@@ -55,6 +55,28 @@ gatherers[1] = 0;
 var bandwidth = 0;
 var totalBandwidth = 0;
 var bandwidthTime = Date.now();
+var listOfIds = [
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1
+];
 var ball = { //this is done by the server so goalkeepers can react
 
     id: null,
@@ -98,25 +120,14 @@ var C = SAT.Circle;
 app.use(express.static(__dirname + '/../client'));
 
 function updateCapacity(port) {
-    fs
-        .readFile('../capacity.json', 'utf8', function readFileCallback(err, data) {
-            if (err) {
-                console.log(err);
-                console.log("read failure");
-            } else if (port > 3000) {
-                let obj = JSON.parse(data);
-                obj.ports[port - 3000 - 1].players = users.length;
-                let json = JSON.stringify(obj);
-                fs.writeFile('../capacity.json', json, 'utf8', function writeFileCallback(err, data) {
-                    if (err) {
-                        console.log(err);
-                        console.log("write failure");
-                    }
-                });
-            } else {
-                console.log("port not in range");
-            }
-        });
+    // fs     .readFile('../capacity.json', 'utf8', function readFileCallback(err,
+    // data) {         if (err) {             console.log(err); console.log("read
+    // failure");         } else if (port > 3000) { let obj = JSON.parse(data);
+    // obj.ports[port - 3000 - 1].players = users.length;             let json =
+    // JSON.stringify(obj); fs.writeFile('../capacity.json', json, 'utf8', function
+    // writeFileCallback(err, data) {                 if (err) { console.log(err);
+    //            console.log("write failure");           } });         } else {
+    //       console.log("port not in range");         }   });
 }
 
 function moveGoalkeeper() {
@@ -195,8 +206,8 @@ function movePlayer(player) {
             player.sprint--;
         if (player.sprint < 0) 
             player.sprint = 0;
-        var x = 0,
-            y = 0;
+        
+        // var x = 0,     y = 0;
         var target = {
             x: player.target.x,
             y: player.target.y
@@ -314,8 +325,8 @@ function moveBall(ball) {
         }
     
     // these functions check if the mass is out of bounds. could be used to check if
-    // the ball is out of bounds, and trigger a restart or something. they will also
-    // check if a goal is scored
+    // the ball is out of bounds, and trigger a restart or something. they will
+    // also check if a goal is scored
 
     if (ball.x > c.gameWidth - borderCalc) {
         if (ball.y > c.gameHeight / 2 - c.goalWidth / 2 && ball.y < c.gameHeight / 2 + c.goalWidth / 2) {
@@ -323,7 +334,7 @@ function moveBall(ball) {
                 users
                     .forEach(function (u) {
                         if (!u.isBot) {
-                            sockets[u.id].emit('goal');
+                            sockets[u.socketId].emit('goal');
                         }
                     });
                 console.log('goal right (blue scores)');
@@ -351,7 +362,7 @@ function moveBall(ball) {
                 users
                     .forEach(function (u) {
                         if (!u.isBot) {
-                            sockets[u.id].emit('goal');
+                            sockets[u.socketId].emit('goal');
                         }
                     });
                 console.log('goal left (red scores)');
@@ -436,9 +447,10 @@ io
             x: 0,
             y: 0
         };
-        console.log(socket.id);
+        // console.log(socket.id);
         var currentPlayer = {
-            id: socket.id,
+            id: -1,
+            socketId: socket.id,
             skinsprite: "",
             frame: 0,
             hue: 0,
@@ -459,14 +471,14 @@ io
             speed: 0
         };
         socket.on('gotit', function (player) {
-            console.log('[INFO] Player ' + player.name + ' connecting!');
+            // console.log('[INFO] Player ' + player.name + ' connecting!');
 
             if (users.length >= c.maxPlayers) {
-                console.log('[INFO] Too many players, kicking.');
+                // console.log('[INFO] Too many players, kicking.');
                 socket.emit('kick', 'Full server.');
                 socket.disconnect();
             } else if (util.findIndex(users, player.id) > -1) {
-                console.log('[INFO] Player ID is already connected, kicking.');
+                // console.log('[INFO] Player ID is already connected, kicking.');
                 socket.disconnect();
             } else if (!util.validNick(player.name) || util.slurNick(player.name)) {
                 socket.emit('kick', 'Invalid username.');
@@ -474,8 +486,8 @@ io
             } else {
                 confirmSkin(player.conf).then((response) => {
                     updateCapacity(serverport);
-                    console.log('[INFO] Player ' + player.name + ' connected!');
-                    sockets[player.id] = socket;
+                    // console.log('[INFO] Player ' + player.name + ' connected!');
+                    sockets[player.socketId] = socket;
                     if (response) 
                         player.skinsprite = response.skinsprite;
                     else 
@@ -504,7 +516,9 @@ io
                     player.lastX = -1;
                     player.lastY = -1;
                     player.speed = 0;
+                    // player.id = pickId();
                     currentPlayer = player;
+                    // console.log(currentPlayer);
                     users.push(currentPlayer);
 
                     io.emit('playerJoin', {name: currentPlayer.name});
@@ -536,7 +550,8 @@ io
             if (util.findIndex(users, currentPlayer.id) > -1) 
                 users.splice(util.findIndex(users, currentPlayer.id), 1);
             socket.emit('welcome', currentPlayer);
-            console.log('[INFO] User ' + currentPlayer.name + ' respawned!');
+            // console.log(currentPlayer); console.log('[INFO] User ' + currentPlayer.name +
+            // ' respawned!');
         });
 
         socket.on('disconnect', function () {
@@ -545,7 +560,7 @@ io
                 teams[currentPlayer.team].player_amount++;
                 users.splice(util.findIndex(users, currentPlayer.id), 1);
             }
-            console.log('[INFO] User ' + currentPlayer.name + ' disconnected!');
+            // console.log('[INFO] User ' + currentPlayer.name + ' disconnected!');
             updateCapacity(serverport);
             socket
                 .broadcast
@@ -574,13 +589,15 @@ io
                             }
                         }
                         if (reason !== '') {
-                            console.log('[ADMIN] User ' + users[e].name + ' kicked successfully by ' + currentPlayer.name + ' for reason ' + reason);
+                            // console.log('[ADMIN] User ' + users[e].name + ' kicked successfully by ' +
+                            // currentPlayer.name + ' for reason ' + reason);
                         } else {
-                            console.log('[ADMIN] User ' + users[e].name + ' kicked successfully by ' + currentPlayer.name);
+                            // console.log('[ADMIN] User ' + users[e].name + ' kicked successfully by ' +
+                            // currentPlayer.name);
                         }
                         socket.emit('serverMSG', 'User ' + users[e].name + ' was kicked by ' + currentPlayer.name);
-                        sockets[users[e].id].emit('kick', reason);
-                        sockets[users[e].id].disconnect();
+                        sockets[users[e].socketId].emit('kick', reason);
+                        sockets[users[e].socketId].disconnect();
                         users.splice(e, 1);
                         worked = true;
                     }
@@ -589,7 +606,8 @@ io
                     socket.emit('serverMSG', 'Could not locate user or user is an admin.');
                 }
             } else {
-                console.log('[ADMIN] ' + currentPlayer.name + ' is trying to use -kick but isn\'t an admin.');
+                // console.log('[ADMIN] ' + currentPlayer.name + ' is trying to use -kick but
+                // isn\'t an admin.');
                 socket.emit('serverMSG', 'You are not permitted to use this command.');
             }
         });
@@ -756,7 +774,9 @@ function moveloop() {
 
 function checkAssist(team) {
     let bestFriendDistanceFromKeeper = -1,
-        myDistanceFromKeeper = -1;
+        myDistanceFromKeeper = -1,
+        bestFriendDistanceFromLine = -1,
+        myDistanceFromLine = -1;
     let bestFriendPos = {
         x: -1,
         y: -1
@@ -775,15 +795,17 @@ function checkAssist(team) {
                     bestFriendPos.x = u.x;
                     bestFriendPos.y = u.y;
                     bestFriendDistanceFromKeeper = friendDistanceFromKeeper;
+                    bestFriendDistanceFromLine = Math.abs(u.x - c.gameWidth * (1 - u.team));
                 }
             }
         } else {
             myDistanceFromKeeper = util.getRealDistance(u, goalkeepers[1 - u.team].position);
+            myDistanceFromLine = Math.abs(u.x - c.gameWidth * (1 - u.team));
         }
     });
-    // console.log(bestFriendDistanceFromKeeper + ">" + myDistanceFromKeeper)
-    if (bestFriendDistanceFromKeeper > myDistanceFromKeeper) {
-        // console.log("should assist here m8!");
+    // console.log(bestFriendDistanceFromLine-10+"<="+myDistanceFromLine);
+    if (bestFriendDistanceFromKeeper > myDistanceFromKeeper && bestFriendDistanceFromLine - 10 <= myDistanceFromLine) {
+        console.log("should assist here m8!");
         return bestFriendPos;
     } else {
         return false;
@@ -791,7 +813,7 @@ function checkAssist(team) {
 }
 
 var bot = {
-    id: 0,
+    id: -1,
     name: "",
     isBot: true,
     command: -1,
@@ -823,21 +845,20 @@ function controlBots() {
     // friendly bots should stay at a distance while close-by enemies should chase
     // when the ball is on the loose, close-by bots should move towards the ball
     //
-    // if (chasers[0] < 0) 
-        chasers[0] = 0;
-    // if (chasers[1] < 0) 
-        chasers[1] = 0;
-    // if (gatherers[0] < 0) 
-        gatherers[0] = 0;
-    // if (gatherers[1] < 0) 
-        gatherers[1] = 0;
+    // if (chasers[0] < 0)
+    chasers[0] = 0;
+    // if (chasers[1] < 0)
+    chasers[1] = 0;
+    // if (gatherers[0] < 0)
+    gatherers[0] = 0;
+    // if (gatherers[1] < 0)
+    gatherers[1] = 0;
     users.forEach(u => {
         if (u.command == 6) 
             gatherers[u.team]++;
         if (u.command == 5) 
             chasers[u.team]++;
         }
-        
     );
     for (let i = 0; i < users.length; i++) {
         // users[i].name = users[i].x + "," + users[i].y;
@@ -876,7 +897,7 @@ function controlBots() {
                     }
                 }
             }
-            if (gatherers[users[i].team]<2&& util.getRealDistance(users[i], ball) < 400 && ball.isLoose) { //if he is close enough, then gather a loose ball
+            if (gatherers[users[i].team] < 2 && util.getRealDistance(users[i], ball) < 400 && ball.isLoose) { //if he is close enough, then gather a loose ball
                 // console.log(util.getDistance(users[i], ball)); console.log(ball.isLoose);
                 users[i].command = 6;
                 gatherers[users[i].team]++;
@@ -921,7 +942,10 @@ function controlBots() {
                     let assistChance = checkAssist(users[i].team);
                     if (assistChance) {
                         // console.log(assistChance);
-                        users[i].target.x = assistChance.x - users[i].x;
+                        let assistOffset = users[i].team == 0
+                            ? -20
+                            : 20; //an assist should be a bit ahead of player
+                        users[i].target.x = assistChance.x - users[i].x + assistOffset;
                         users[i].target.y = assistChance.y - users[i].y;
                         kickBall(users[i], 4, 1);
                     } else {
@@ -964,22 +988,24 @@ function controlBots() {
                 users[i].command = users[i].team + 1;
             }
 
-            users[i].name = "BOT";
+            users[i].name = "BOT" + users[i].id;
         }
     }
 }
 
 function balanceBots() {
-    // console.log(chasers[0] + "," +chasers[1] + " === "+gatherers[0] + ","+ gatherers[1]);
-    if (users.length < 19) {
+    // console.log(chasers[0] + "," +chasers[1] + " === "+gatherers[0] + ","+
+    // gatherers[1]);
+    let botMax = 8;
+    if (users.length < botMax) {
 
-        bot.id--;
         bot.hue = teams[0].player_amount > teams[1].player_amount
             ? 0
             : 220;
         bot.team = teams[0].player_amount > teams[1].player_amount
             ? 1
             : 0;
+        // bot.hue = 0; bot.team = 1;
 
         var radius = c.playerRadius;
         var position = util.randomTeamPosition(radius, bot.team);
@@ -1010,13 +1036,16 @@ function balanceBots() {
         });
         teams[bot.team].player_amount++;
 
-    } else if (users.length > 19) {
-        for (let i = users.length - 1; i >= 0; --i) {
-            if (users[i].id == bot.id) {
+    } else if (users.length > botMax) {
+        // for (let i = users.length - 1; i >= 0; --i) {     if (users[i].id == bot.id)
+        // {         users.splice(i, 1);     } }
+        for (let i = 0; i < users.length; i++) {
+            if (users[i].isBot) {
+                listOfIds[users[i].id] = -1;
                 users.splice(i, 1);
+                break;
             }
         }
-        bot.id++;
     }
 }
 
@@ -1033,20 +1062,50 @@ function chasersFix() { //bandaid fix for chaser count being non zero while no o
     }
 }
 
+function updateIdOfUsers() {
+    let strOfArr = "";
+    for (let i = 0; i < listOfIds.length; i++) {
+        // strOfArr+=","+listOfIds[i];
+        listOfIds[i] = -1;
+    }
+    // console.log(strOfArr);
+
+    users.forEach(u => {
+        if (u.id) {
+            listOfIds[u.id] = 1;
+        }
+    });
+
+    users.forEach(u => {
+        if ((!u.id && u.id != 0) || u.id == -1) {
+
+            for (let i = 0; i < listOfIds.length; i++) {
+                if (listOfIds[i] == -1) {
+                    listOfIds[i] = 1;
+                    u.id = i;
+                }
+                console.log("new ID allocated: " + i);
+
+            }
+        }
+    });
+}
+
 function gameloop() {
     if (users.length > 0) {
+        updateIdOfUsers();
         balanceBots();
 
         users.forEach(function (u) {
             if (!u.isBot) {
-                // addToBandWidth({
-                //     a: {
-                //         blue: teams[0].score,
-                //         red: teams[1].score
-                //     },
-                //     b: users
-                // });
-                sockets[u.id].emit('4', {
+                addToBandWidth({
+                    a: {
+                        blue: teams[0].score,
+                        red: teams[1].score
+                    },
+                    b: users
+                });
+                sockets[u.socketId].emit('4', {
                     blue: teams[0].score,
                     red: teams[1].score
                 }, users);
@@ -1056,9 +1115,9 @@ function gameloop() {
 }
 
 function resetEmoji() {
-    // chasersFix(); //I put this here because I don't want to check this too frequently ======> make it independant
+    // chasersFix(); //I put this here because I don't want to check this too
+    // frequently ======> make it independant
     if (users.length > 0) {
-        //balanceBots();
         users
             .forEach(function (u) {
                 if (!u.isBot) {
@@ -1081,8 +1140,8 @@ function sendUpdates() {
 
             var slowDown = 1;
 
-            var deltaY = u.speed * Math.sin(deg) / slowDown;
-            var deltaX = u.speed * Math.cos(deg) / slowDown;
+            // var deltaY = u.speed * Math.sin(deg) / slowDown; var deltaX = u.speed *
+            // Math.cos(deg) / slowDown;
 
             let dir = 0;
             if (deg > -1 * Math.PI / 8 && deg <= Math.PI / 8) {
@@ -1128,9 +1187,19 @@ function sendUpdates() {
                 var visibleCells = users.map(function (f) {
                     if (f.x + c.playerRadius > u.x - u.screenWidth / 2 - 20 && f.x - c.playerRadius < u.x + u.screenWidth / 2 + 20 && f.y + c.playerRadius > u.y - u.screenHeight / 2 - 20 && f.y - c.playerRadius < u.y + u.screenHeight / 2 + 20) {
                         if (f.id !== u.id) {
-                            return {id: f.id, frame: f.frame, x: f.x, y: f.y};
+                            return {
+                                id: f.id,
+                                frame: f.frame,
+                                x: Math.floor(f.x),
+                                y: Math.floor(f.y)
+                            };
                         } else {
-                            return {idz: f.id, frame: f.frame, x: f.x, y: f.y};
+                            return {
+                                idz: f.id,
+                                frame: f.frame,
+                                x: Math.floor(f.x),
+                                y: Math.floor(f.y)
+                            };
                             }
                         }
                     })
@@ -1139,11 +1208,10 @@ function sendUpdates() {
                     });
                 var visibleBall = {
                     x: ball.x,
-                    y: ball.y,
-                    frame: ball.frame
+                    y: ball.y
                 };
-                sockets[u.id].emit('3', visibleCells, visibleBall, goalkeepers);
-                // addToBandWidth({a: '3', b: visibleCells, c: visibleBall, d: goalkeepers});
+                sockets[u.socketId].emit('3', visibleCells, visibleBall, goalkeepers);
+                addToBandWidth({a: '3', b: visibleCells, c: visibleBall, d: goalkeepers});
 
             }
         });
@@ -1189,8 +1257,8 @@ function ballspawn(where) {
 function afkCheck() {
     for (var i = 0; i < users.length; i++) {
         if (users[i].x == users[i].lastX && users[i].y == users[i].lastY) {
-            sockets[users[i].id].emit('kick', 'Inactivity.');
-            sockets[users[i].id].disconnect();
+            sockets[users[i].socketId].emit('kick', 'Inactivity.');
+            sockets[users[i].socketId].disconnect();
             users.splice(i, 1);
             console.log("KICKED " + i);
         }
@@ -1198,15 +1266,16 @@ function afkCheck() {
 }
 
 function addToBandWidth(obj) {
-    bandwidth += roughSizeOfObject(obj);
-    totalBandwidth += roughSizeOfObject(obj);
+    let currentSize = roughSizeOfObject(obj) + 17;
+    bandwidth += currentSize;
+    totalBandwidth += currentSize;
 }
 
 var bandWidthIteration = 5000;
 function bandwidthCheck() {
     let milliseconds = (Date.now() - bandwidthTime),
         average = totalBandwidth / milliseconds;
-    console.log(Math.floor((bandwidth / bandWidthIteration)) + "KB, (" + Math.floor(average)+"KB avg)");
+    // console.log(Math.floor((bandwidth / bandWidthIteration)) + "KB, (" + Math.floor(average) + "KB avg)");
     bandwidth = 0;
 }
 
@@ -1216,7 +1285,7 @@ setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
 setInterval(afkCheck, 500000); //change this to 1 minute
-// setInterval(bandwidthCheck, bandWidthIteration);
+setInterval(bandwidthCheck, bandWidthIteration);
 
 if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
     http

@@ -90,11 +90,11 @@ function emojiAlignment(resizing) {
     // document.getElementById('smiley').style.left = (global.screenWidth - 40) +
     // 'px';     document.getElementById('poopy').style.left = (global.screenWidth -
     // 40) + 'px';     document.getElementById('finger').style.left =
-    // (global.screenWidth - 40) + 'px';
-    // document.getElementById('xd').style.left = (global.screenWidth - 40) + 'px';
-    //    document.getElementById('hmmm').style.left = (global.screenWidth - 40) +
-    // 'px';     document.getElementById('angry').style.left = (global.screenWidth -
-    // 40) + 'px'; }
+    // (global.screenWidth - 40) + 'px'; document.getElementById('xd').style.left =
+    // (global.screenWidth - 40) + 'px'; document.getElementById('hmmm').style.left
+    // = (global.screenWidth - 40) + 'px';
+    // document.getElementById('angry').style.left = (global.screenWidth - 40) +
+    // 'px'; }
 }
 
 function startGame() {
@@ -106,7 +106,7 @@ function startGame() {
     //global.playerType = type;
     global.screenWidth = window.innerWidth;
     global.screenHeight = window.innerHeight;
-    if (window.innerWidth < 1024) {
+    if (window.innerWidth <= 1024) {
         var viewport = document.querySelector("meta[name=viewport]");
         var iscale = global.screenWidth / 1024;
         window.canvas.cv.width = 1024;
@@ -273,13 +273,19 @@ function setupSocket(socket) {
                 i = userData.length;
             }
         }
-        // var xoffset = player.x - playerData.x; var yoffset = player.y - playerData.y;
+        player.xoffset = player.x - playerData.x;
+        player.yoffset = player.y - playerData.y;
 
         player.x = playerData.x;
         player.y = playerData.y;
-        // player.xoffset = isNaN(xoffset) ? 0 : xoffset; player.yoffset =
-        // isNaN(yoffset) ? 0 : yoffset;
+        player.xoffset = isNaN(player.xoffset)
+            ? 0
+            : player.xoffset;
+        player.yoffset = isNaN(player.yoffset)
+            ? 0
+            : player.yoffset;
 
+        
         users = userData;
         ball = serverBall;
         goalkeepers = serverGoalkeepers;
@@ -362,46 +368,49 @@ function drawBall(ball) {
     var ballX = ball.x - player.x + global.screenWidth / 2;
     var ballY = ball.y - player.y + global.screenHeight / 2;
     // graph.drawImage(character, ballX - 15, ballY - 15, 30, 30);
-
+    if (!ball.frame) 
+        ball.frame = 0;
     graph.drawImage(ballSprites[(Math.floor(ball.frame / 10) % 10)], ballX - 15, ballY - 15, 30, 30);
 }
 
 function drawGoalkeeper(goalkeepers) {
-    graph.strokeStyle = 'hsl(220, 40%, 45%)';
-    graph.fillStyle = 'hsl(220, 40%, 50%)';
-    graph.lineWidth = playerConfig.border + 10;
+    // graph.strokeStyle = 'hsl(220, 40%, 45%)';
+    // graph.fillStyle = 'hsl(220, 40%, 50%)';
+    // graph.lineWidth = playerConfig.border + 10;
     var fontSize = 80;
-    var handDist = 0;
+    // var handDist = 0;
     var x = goalkeepers[0].position.x - player.x + global.screenWidth / 2;
     var y = goalkeepers[0].position.y - player.y + global.screenHeight / 2;
-    drawCircle(x, y, global.goalkeeperRadius, 18);
+    // drawCircle(x, y, global.goalkeeperRadius, 18);
 
     graph.fillStyle = playerConfig.textColor;
     graph.font = 'bold ' + fontSize + 'px arial';
 
-    graph.strokeText("💪😂👊", x - handDist, y);
-    graph.fillText("💪😂👊", x - handDist, y);
+    // graph.strokeText("💪😂👊", x - handDist, y);
+    graph.fillText("💪", x-60, y-20);
+    graph.scale(-1, 1);
+    graph.fillText("💪", -60-x, y-20);
+    graph.scale(-1, 1);
+    graph.fillText("😂", x, y);
 
     x = goalkeepers[1].position.x - player.x + global.screenWidth / 2;
     y = goalkeepers[1].position.y - player.y + global.screenHeight / 2;
 
-    graph.strokeStyle = 'hsl(0, 100%, 45%)';
-    graph.fillStyle = 'hsl(0, 100%, 50%)';
-    graph.lineWidth = playerConfig.border + 10;
-    drawCircle(x, y, global.goalkeeperRadius, 18);
+    // graph.strokeStyle = 'hsl(0, 100%, 45%)';
+    // graph.fillStyle = 'hsl(0, 100%, 50%)';
+    // graph.lineWidth = playerConfig.border + 10;
+    // drawCircle(x, y, global.goalkeeperRadius, 18);
 
-    graph.strokeText("💪😂👊", x - handDist, y);
-    graph.fillText("💪😂👊", x - handDist, y);
+    // graph.strokeText("💪😂👊", x - handDist, y);
+    // graph.fillText("💪😂👊", x - handDist, y);
+    graph.fillText("💪", x-60, y-20);
+    graph.scale(-1, 1);
+    graph.fillText("💪", -60-x, y-20);
+    graph.scale(-1, 1);
+    graph.fillText("😂", x, y);
 }
 
-function drawGoalDirection() {
-    var userCurrent;
-    for (var i = 0; i < usersExpanded.length; i++) {
-        if (usersExpanded[i].x == player.x && usersExpanded[i].y == player.y) {
-            userCurrent = usersExpanded[i];
-            break;
-        }
-    }
+function drawGoalDirection(team) {
     graph.lineWidth = playerConfig.textBorderSize;
     graph.fillStyle = 'Black';
     graph.strokeStyle = playerConfig.textBorder;
@@ -413,11 +422,11 @@ function drawGoalDirection() {
     var distance;
     var emojiDeltaX;
     var emojiDeltaY;
-    if (userCurrent == undefined || userCurrent.hue == 0) {
+    if (team == 1) {
         distance = Math.sqrt(Math.pow(player.x, 2) + Math.pow((player.y - global.screenHeight / 2), 2)); //only towards left
         emojiDeltaX = (0 - player.x * 60) / distance;
         emojiDeltaY = ((global.gameHeight / 2 - player.y) * 60) / distance;
-    } else if (userCurrent.hue == 220) {
+    } else if (team == 0) {
         distance = Math.sqrt(Math.pow(global.gameWidth - player.x, 2) + Math.pow((player.y - global.screenHeight / 2), 2)); //only towards right
         emojiDeltaX = ((global.gameWidth - player.x) * 60) / distance;
         emojiDeltaY = ((global.gameHeight / 2 - player.y) * 60) / distance;
@@ -513,11 +522,14 @@ function drawPlayers() {
         var cellCurrent = userCurrent;
         for (var i = 0; i < usersExpanded.length; i++) {
             if (usersExpanded[i].id == userCurrent.id || usersExpanded[i].id == userCurrent.idz) {
+                // console.log(usersExpanded[i]);
                 cellCurrent = usersExpanded[i];
                 break;
             }
         }
-
+        if (player.x == userCurrent.x && player.y == userCurrent.y) 
+            drawGoalDirection(cellCurrent.team);
+        
         var points = 30 + ~~ (30 / 5);
         var increase = Math.PI * 2 / points;
         if (cellCurrent.hue != undefined) {
@@ -580,6 +592,7 @@ function drawPlayers() {
         if (cellCurrent.name == null) {
             nameCell = "";
         }
+        nameCell = cellCurrent.id;
         var fontSize = 24;
         graph.lineWidth = playerConfig.textBorderSize;
         graph.fillStyle = 'Black';
@@ -657,6 +670,19 @@ function drawPlayers() {
             // graph.drawImage(character, srcX, srcY, width, height, circle.x - 60, circle.y
             // - 190, width, height);
         }
+
+
+        graph.beginPath();
+        let deg = 0;
+        let rad = 28;
+        if(player.xoffset!=0){
+            deg=Math.atan2(player.yoffset,player.xoffset);
+        } else{
+            deg = player.yoffset>=0 ? Math.PI/2 : 3*Math.PI/2;
+        }
+        graph.moveTo(global.screenWidth/2, global.screenHeight/2);
+        graph.lineTo(global.screenWidth/2-rad*Math.cos(deg),global.screenHeight/2 -rad*Math.sin(deg));
+        graph.stroke();
     }
 
 function valueInRange(min, max, value) {
@@ -767,7 +793,7 @@ function drawborder() {
 
 window.requestAnimFrame = (function () {
     return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
-        window.setTimeout(callback, 1000 / 60);
+        window.setTimeout(callback, 1000 / 24);
     };
 })();
 
@@ -802,7 +828,6 @@ function gameLoop() {
             drawCommercials(comIndex);
             drawborder();
             drawgoals();
-            drawGoalDirection();
             drawBallDirection();
             drawScore(score);
             drawGoalkeeper(goalkeepers);
@@ -911,4 +936,4 @@ function comIndexNext() { // rolls commercial signs
 }
 
 setInterval(comIndexNext, 30000);
-setInterval(pingCheck, 3000);
+// setInterval(pingCheck, 3000);

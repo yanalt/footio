@@ -3,9 +3,11 @@
     "port": 3001,
     "gameWidth": 2200,
     "gameHeight": 1300,
-    "playerRadius": 28,
+    "playerRadius": 20,
     "goalWidth": 400,
     "goalkeeperRadius": 40,
-    "maxPlayers": 20,
-    "networkUpdateFactor": 24
+    "maxPlayers": 10,
+    "maxScreenWidth": 1024,
+    "maxScreenHeight": 768,
+    "networkUpdateFactor": 18
 }
