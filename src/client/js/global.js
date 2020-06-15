@@ -28,7 +28,7 @@ module.exports = {
     continuity: true,
     startPingTime: 0,
     toggleMassState: 0,
-    backgroundColor: '#98fb98',
+    backgroundColor: '#7EC850',
     lineColor: '#000000',
     buttonAlignment: 'right',
     usingMobileVersion: true,

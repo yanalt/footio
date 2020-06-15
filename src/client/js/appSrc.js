@@ -285,7 +285,6 @@ function setupSocket(socket) {
             ? 0
             : player.yoffset;
 
-        
         users = userData;
         ball = serverBall;
         goalkeepers = serverGoalkeepers;
@@ -339,7 +338,7 @@ function drawCircle(centerX, centerY, radius, sides) {
 
     graph.closePath();
     graph.stroke();
-    //graph.fill();
+    graph.fill();
 }
 
 function drawCommercials(index) {
@@ -368,15 +367,15 @@ function drawBall(ball) {
     var ballX = ball.x - player.x + global.screenWidth / 2;
     var ballY = ball.y - player.y + global.screenHeight / 2;
     // graph.drawImage(character, ballX - 15, ballY - 15, 30, 30);
+    console.log(ball.frame);
     if (!ball.frame) 
         ball.frame = 0;
     graph.drawImage(ballSprites[(Math.floor(ball.frame / 10) % 10)], ballX - 15, ballY - 15, 30, 30);
 }
 
 function drawGoalkeeper(goalkeepers) {
-    // graph.strokeStyle = 'hsl(220, 40%, 45%)';
-    // graph.fillStyle = 'hsl(220, 40%, 50%)';
-    // graph.lineWidth = playerConfig.border + 10;
+    // graph.strokeStyle = 'hsl(220, 40%, 45%)'; graph.fillStyle = 'hsl(220, 40%,
+    // 50%)'; graph.lineWidth = playerConfig.border + 10;
     var fontSize = 80;
     // var handDist = 0;
     var x = goalkeepers[0].position.x - player.x + global.screenWidth / 2;
@@ -387,25 +386,22 @@ function drawGoalkeeper(goalkeepers) {
     graph.font = 'bold ' + fontSize + 'px arial';
 
     // graph.strokeText("💪😂👊", x - handDist, y);
-    graph.fillText("💪", x-60, y-20);
+    graph.fillText("💪", x - 60, y - 20);
     graph.scale(-1, 1);
-    graph.fillText("💪", -60-x, y-20);
+    graph.fillText("💪", -60 - x, y - 20);
     graph.scale(-1, 1);
     graph.fillText("😂", x, y);
 
     x = goalkeepers[1].position.x - player.x + global.screenWidth / 2;
     y = goalkeepers[1].position.y - player.y + global.screenHeight / 2;
 
-    // graph.strokeStyle = 'hsl(0, 100%, 45%)';
-    // graph.fillStyle = 'hsl(0, 100%, 50%)';
-    // graph.lineWidth = playerConfig.border + 10;
-    // drawCircle(x, y, global.goalkeeperRadius, 18);
-
-    // graph.strokeText("💪😂👊", x - handDist, y);
+    // graph.strokeStyle = 'hsl(0, 100%, 45%)'; graph.fillStyle = 'hsl(0, 100%,
+    // 50%)'; graph.lineWidth = playerConfig.border + 10; drawCircle(x, y,
+    // global.goalkeeperRadius, 18); graph.strokeText("💪😂👊", x - handDist, y);
     // graph.fillText("💪😂👊", x - handDist, y);
-    graph.fillText("💪", x-60, y-20);
+    graph.fillText("💪", x - 60, y - 20);
     graph.scale(-1, 1);
-    graph.fillText("💪", -60-x, y-20);
+    graph.fillText("💪", -60 - x, y - 20);
     graph.scale(-1, 1);
     graph.fillText("😂", x, y);
 }
@@ -476,12 +472,14 @@ function drawButton() {
 
     var buttonSize = window.canvas.cv.width / 12;
 
-    graph.strokeStyle = 'hsl(280, 100%, 45%)';
-    graph.fillStyle = 'hsl(280, 100%, 50%)';
+    graph.strokeStyle = 'hsl(280, 100%, 45%, 0)';
+    graph.fillStyle = 'hsla(280, 0%, 50%, 0.4)';
     graph.lineWidth = playerConfig.border + 10;
-    drawCircle(global.screenWidth - buttonSize, global.screenHeight - buttonSize, buttonSize, 18);
-    drawCircle(global.screenWidth / 2, global.screenHeight - buttonSize, buttonSize, 18);
-    drawCircle(buttonSize, global.screenHeight - buttonSize, buttonSize, 18);
+    drawCircle(global.screenWidth - buttonSize, global.screenHeight - buttonSize, buttonSize, 50);
+    // drawCircle(global.screenWidth / 2, global.screenHeight - buttonSize,
+    // buttonSize, 50);
+    drawCircle(global.screenWidth - 3 * buttonSize - 10, global.screenHeight - buttonSize, buttonSize, 50);
+    drawCircle(buttonSize, global.screenHeight - buttonSize, buttonSize, 50);
     var fontSize = Math.max(40 / 3, 12);
     graph.lineWidth = playerConfig.textBorderSize;
     graph.fillStyle = playerConfig.textColor;
@@ -493,23 +491,24 @@ function drawButton() {
     fontSize = 36;
     graph.font = 'bold ' + fontSize + 'px arial';
     if (global.buttonAlignment == 'right') {
-        graph.strokeText("KICK!", global.screenWidth - buttonSize, global.screenHeight - buttonSize);
-        graph.fillText("KICK!", global.screenWidth - buttonSize, global.screenHeight - buttonSize);
+        graph.strokeText("⚽", global.screenWidth - buttonSize, global.screenHeight - buttonSize);
+        graph.fillText("⚽", global.screenWidth - buttonSize, global.screenHeight - buttonSize);
         graph.strokeText("🕹", buttonSize, global.screenHeight - buttonSize);
         graph.fillText("🕹", buttonSize, global.screenHeight - buttonSize);
     } else {
-        graph.strokeText("KICK!", buttonSize, global.screenHeight - buttonSize);
-        graph.fillText("KICK!", buttonSize, global.screenHeight - buttonSize);
+        graph.strokeText("⚽", buttonSize, global.screenHeight - buttonSize);
+        graph.fillText("⚽", buttonSize, global.screenHeight - buttonSize);
         graph.strokeText("🕹", global.screenWidth - buttonSize, global.screenHeight - buttonSize);
         graph.fillText("🕹️", global.screenWidth - buttonSize, global.screenHeight - buttonSize);
     }
-    graph.strokeText("🏃", global.screenWidth / 2, global.screenHeight - buttonSize);
-    graph.fillText("🏃", global.screenWidth / 2, global.screenHeight - buttonSize);
+    graph.strokeText("🏃", global.screenWidth - 3 * buttonSize - 10, global.screenHeight - buttonSize);
+    graph.fillText("🏃", global.screenWidth - 3 * buttonSize - 10, global.screenHeight - buttonSize);
     fontSize = Math.max(40 / 3, 12);
     graph.font = 'bold ' + fontSize + 'px sans-serif';
 }
 
 function drawPlayers() {
+    // console.log(c);
     var start = {
         x: player.x - (global.screenWidth / 2),
         y: player.y - (global.screenHeight / 2)
@@ -592,7 +591,7 @@ function drawPlayers() {
         if (cellCurrent.name == null) {
             nameCell = "";
         }
-        nameCell = cellCurrent.id;
+        // nameCell = cellCurrent.id;
         var fontSize = 24;
         graph.lineWidth = playerConfig.textBorderSize;
         graph.fillStyle = 'Black';
@@ -662,7 +661,7 @@ function drawPlayers() {
         if (cellCurrent.skinsprite != null && cellCurrent.skinsprite != "") 
             graph.drawImage(characterSprites[cellCurrent.skinsprite], srcX, srcY, width, height, circle.x - 60, circle.y - 190, width, height);
         else 
-            graph.drawImage(characterSprites[0], srcX, srcY, width, height, circle.x - 60, circle.y - 190, width, height);
+            graph.drawImage(characterSprites[0], srcX, srcY, width, height, circle.x - 60, circle.y - 170, width, height);
 
             // var character = new Image(); if (cellCurrent.skinsprite != null &&
             // cellCurrent.skinsprite != "")     character.src = "/img/" +
@@ -670,20 +669,14 @@ function drawPlayers() {
             // graph.drawImage(character, srcX, srcY, width, height, circle.x - 60, circle.y
             // - 190, width, height);
         }
-
-
-        graph.beginPath();
-        let deg = 0;
-        let rad = 28;
-        if(player.xoffset!=0){
-            deg=Math.atan2(player.yoffset,player.xoffset);
-        } else{
-            deg = player.yoffset>=0 ? Math.PI/2 : 3*Math.PI/2;
-        }
-        graph.moveTo(global.screenWidth/2, global.screenHeight/2);
-        graph.lineTo(global.screenWidth/2-rad*Math.cos(deg),global.screenHeight/2 -rad*Math.sin(deg));
-        graph.stroke();
-    }
+    // //the following are to draw a line in the movement direction
+    // graph.beginPath(); let deg = 0; let rad = 28; if (player.xoffset != 0) { deg
+    // = Math.atan2(player.yoffset, player.xoffset); } else {     deg =
+    // player.yoffset >= 0         ? Math.PI / 2         : 3 * Math.PI / 2; }
+    // graph.moveTo(global.screenWidth / 2, global.screenHeight / 2);
+    // graph.lineTo(global.screenWidth / 2 - rad * Math.cos(deg),
+    // global.screenHeight / 2 - rad * Math.sin(deg)); graph.stroke();
+}
 
 function valueInRange(min, max, value) {
     return Math.min(max, Math.max(min, value));
@@ -693,7 +686,70 @@ function drawgoals() {
     graph.fillStyle = 'green';
     graph.fillRect(global.screenWidth / 2 - player.x - 100, (global.screenHeight / 2 - player.y) + (global.gameHeight / 2) - (global.goalWidth / 2), 100, global.goalWidth);
     graph.fillRect(global.gameWidth + global.screenWidth / 2 - player.x, (global.screenHeight / 2 - player.y) + (global.gameHeight / 2) - (global.goalWidth / 2), 100, global.goalWidth);
+    graph.strokeStyle = '#FFFFFF';
+    let rectTopLeft = {
+        x: global.screenWidth / 2 - player.x - 100,
+        y: (global.screenHeight / 2 - player.y) + (global.gameHeight / 2) - (global.goalWidth / 2)
+    }
+    
+    drawNet(rectTopLeft);
+    rectTopLeft = {
+        x: global.gameWidth + global.screenWidth / 2 - player.x,
+        y: (global.screenHeight / 2 - player.y) + (global.gameHeight / 2) - (global.goalWidth / 2)
+    }
+    drawNet(rectTopLeft);
+}
 
+function drawNet(rectTopLeft) {
+    let netWidth = 15;
+    let start = {
+        x: rectTopLeft.x,
+        y: rectTopLeft.y
+    };
+    for (let i = 0; i < global.goalWidth; i += netWidth) {
+        for (let j = 0; j < 100; j += netWidth) {
+            if (i * j != 0) 
+                continue;
+            graph.beginPath();
+            graph.moveTo(start.x + j, start.y + i);
+            let cutEnd = {
+                x: start.x + 100 + j,
+                y: start.y + 100 + i
+            }
+            if (cutEnd.x > rectTopLeft.x + 100) {
+                cutEnd.x = rectTopLeft.x + 100
+                cutEnd.y -= j;
+            }
+            if (cutEnd.y > rectTopLeft.y + global.goalWidth) {
+                cutEnd.y = rectTopLeft.y + global.goalWidth;
+                cutEnd.x -= i - global.goalWidth + 100;
+            }
+            graph.lineTo(cutEnd.x, cutEnd.y);
+            graph.stroke();
+        }
+    }
+    for (let i = 0; i < global.goalWidth; i += netWidth) {
+        for (let j = 0; j < 100; j += netWidth) {
+            if (i * j != 0) 
+                continue;
+            graph.beginPath();
+            graph.moveTo(2 * start.x + 100 - (start.x + j), start.y + i);
+            let cutEnd = {
+                x: start.x + 100 + j,
+                y: start.y + 100 + i
+            }
+            if (cutEnd.x > rectTopLeft.x + 100) {
+                cutEnd.x = rectTopLeft.x + 100
+                cutEnd.y -= j;
+            }
+            if (cutEnd.y > rectTopLeft.y + global.goalWidth) {
+                cutEnd.y = rectTopLeft.y + global.goalWidth;
+                cutEnd.x -= i - global.goalWidth + 100;
+            }
+            graph.lineTo(2 * start.x + 100 - cutEnd.x, cutEnd.y);
+            graph.stroke();
+        }
+    }
 }
 
 function drawGoalText(ball) {
@@ -726,14 +782,17 @@ function drawGoalText(ball) {
 }
 
 function drawborder() {
+    // console.log(global.screenWidth)
     graph.lineWidth = 1;
     graph.strokeStyle = playerConfig.borderColor;
 
-    // Big mid circle
-    graph.beginPath();
-    graph.ellipse(global.gameWidth / 2 + global.screenWidth / 2 - player.x, global.gameHeight / 2 + global.screenHeight / 2 - player.y, 100, 100, 45 * Math.PI / 180, 0, 2 * Math.PI);
+    // Big mid circle graph.beginPath(); graph.ellipse(global.gameWidth / 2 +
+    // global.screenWidth / 2 - player.x, global.gameHeight / 2 +
+    // global.screenHeight / 2 - player.y, 100, 100, 45 * Math.PI / 180, 0, 2 *
+    // Math.PI);
     graph.strokeStyle = global.lineColor;
-    graph.stroke();
+    // graph.stroke();
+    drawCircle(global.gameWidth / 2 + global.screenWidth / 2 - player.x, global.gameHeight / 2 + global.screenHeight / 2 - player.y, 100, 50);
 
     // Mid dot
     graph.beginPath();
@@ -918,12 +977,22 @@ function sendEmoji(e) {
 function resize() {
     if (!socket) 
         return;
-    
+    let minWidth = 1024, //TRY TO FIX FULLSCREEN AND JOISTICK CONFLICT
+        ratio = window.devicePixelRatio || 1;
+    let minHeight = minWidth / ratio;
+
+    var w = screen.width * ratio;
+    var h = screen.height * ratio;
+
+    // if (window.innerWidth < minWidth || window.innerHeight < minHeight) {
+    // player.screenWidth = c.width = global.screenWidth = w; player.screenHeight =
+    // c.height = global.screenHeight = h; } else {
     player.screenWidth = c.width = global.screenWidth = window.innerWidth;
     player.screenHeight = c.height = global.screenHeight = window.innerHeight;
+    // }
 
     emojiAlignment(true);
-
+    // window.alert(global.screenWidth + "x" + global.screenHeight);
     socket.emit('windowResized', {
         screenWidth: global.screenWidth,
         screenHeight: global.screenHeight

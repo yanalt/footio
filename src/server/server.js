@@ -120,14 +120,25 @@ var C = SAT.Circle;
 app.use(express.static(__dirname + '/../client'));
 
 function updateCapacity(port) {
-    // fs     .readFile('../capacity.json', 'utf8', function readFileCallback(err,
-    // data) {         if (err) {             console.log(err); console.log("read
-    // failure");         } else if (port > 3000) { let obj = JSON.parse(data);
-    // obj.ports[port - 3000 - 1].players = users.length;             let json =
-    // JSON.stringify(obj); fs.writeFile('../capacity.json', json, 'utf8', function
-    // writeFileCallback(err, data) {                 if (err) { console.log(err);
-    //            console.log("write failure");           } });         } else {
-    //       console.log("port not in range");         }   });
+    fs
+        .readFile('../capacity.json', 'utf8', function readFileCallback(err, data) {
+            if (err) {
+                console.log(err);
+                console.log("read failure");
+            } else if (port > 3001) {
+                let obj = JSON.parse(data);
+                obj.ports[port - 3001 - 1].players = users.length;
+                let json = JSON.stringify(obj);
+                fs.writeFile('../capacity.json', json, 'utf8', function writeFileCallback(err, data) {
+                    if (err) {
+                        console.log(err);
+                        console.log("write failure");
+                    }
+                });
+            } else {
+                console.log("port not in range");
+            }
+        });
 }
 
 function moveGoalkeeper() {
@@ -291,7 +302,6 @@ function moveBall(ball) {
         if (ball.frame < 0) 
             ball.frame = 100;
         }
-    
     ball.speed -= 0.2;
     if (ball.speed < 0) {
         ball.speed = 0;
@@ -325,8 +335,8 @@ function moveBall(ball) {
         }
     
     // these functions check if the mass is out of bounds. could be used to check if
-    // the ball is out of bounds, and trigger a restart or something. they will
-    // also check if a goal is scored
+    // the ball is out of bounds, and trigger a restart or something. they will also
+    // check if a goal is scored
 
     if (ball.x > c.gameWidth - borderCalc) {
         if (ball.y > c.gameHeight / 2 - c.goalWidth / 2 && ball.y < c.gameHeight / 2 + c.goalWidth / 2) {
@@ -337,7 +347,7 @@ function moveBall(ball) {
                             sockets[u.socketId].emit('goal');
                         }
                     });
-                console.log('goal right (blue scores)');
+                // console.log('goal right (blue scores)');
                 teams[0].score++;
                 ball.speed = 0;
                 ball.x = c.gameWidth + 200;
@@ -365,7 +375,7 @@ function moveBall(ball) {
                             sockets[u.socketId].emit('goal');
                         }
                     });
-                console.log('goal left (red scores)');
+                // console.log('goal left (red scores)');
                 teams[1].score++;
                 ball.speed = 0;
                 ball.x = 0 - 200;
@@ -541,7 +551,7 @@ io
         });
 
         socket.on('windowResized', function (data) {
-            //console.log(data.screenWidth + "x" + data.screenHeight);
+            // console.log(data.screenWidth + "x" + data.screenHeight);
             currentPlayer.screenWidth = data.screenWidth;
             currentPlayer.screenHeight = data.screenHeight;
         });
@@ -805,7 +815,7 @@ function checkAssist(team) {
     });
     // console.log(bestFriendDistanceFromLine-10+"<="+myDistanceFromLine);
     if (bestFriendDistanceFromKeeper > myDistanceFromKeeper && bestFriendDistanceFromLine - 10 <= myDistanceFromLine) {
-        console.log("should assist here m8!");
+        // console.log("should assist here m8!");
         return bestFriendPos;
     } else {
         return false;
@@ -996,7 +1006,7 @@ function controlBots() {
 function balanceBots() {
     // console.log(chasers[0] + "," +chasers[1] + " === "+gatherers[0] + ","+
     // gatherers[1]);
-    let botMax = 8;
+    let botMax = 6;
     if (users.length < botMax) {
 
         bot.hue = teams[0].player_amount > teams[1].player_amount
@@ -1008,12 +1018,13 @@ function balanceBots() {
         // bot.hue = 0; bot.team = 1;
 
         var radius = c.playerRadius;
+        let characterAmount = 40;
         var position = util.randomTeamPosition(radius, bot.team);
 
         users.push({
             id: bot.id,
             name: "BOT",
-            skinsprite: util.randomInRange(1, 38) + "",
+            skinsprite: util.randomInRange(1, characterAmount) + "",
             isBot: true,
             command: -1,
             frame: 0,
@@ -1084,7 +1095,7 @@ function updateIdOfUsers() {
                     listOfIds[i] = 1;
                     u.id = i;
                 }
-                console.log("new ID allocated: " + i);
+                // console.log("new ID allocated: " + i);
 
             }
         }
@@ -1208,7 +1219,8 @@ function sendUpdates() {
                     });
                 var visibleBall = {
                     x: ball.x,
-                    y: ball.y
+                    y: ball.y,
+                    frame: ball.frame
                 };
                 sockets[u.socketId].emit('3', visibleCells, visibleBall, goalkeepers);
                 addToBandWidth({a: '3', b: visibleCells, c: visibleBall, d: goalkeepers});
@@ -1275,7 +1287,7 @@ var bandWidthIteration = 5000;
 function bandwidthCheck() {
     let milliseconds = (Date.now() - bandwidthTime),
         average = totalBandwidth / milliseconds;
-    // console.log(Math.floor((bandwidth / bandWidthIteration)) + "KB, (" + Math.floor(average) + "KB avg)");
+    console.log(Math.floor((bandwidth / bandWidthIteration)) + "KB, (" + Math.floor(average) + "KB avg)");
     bandwidth = 0;
 }
 
@@ -1285,7 +1297,7 @@ setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
 setInterval(afkCheck, 500000); //change this to 1 minute
-setInterval(bandwidthCheck, bandWidthIteration);
+// setInterval(bandwidthCheck, bandWidthIteration);
 
 if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
     http

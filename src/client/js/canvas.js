@@ -198,11 +198,12 @@ class Canvas {
         touch.preventDefault();
         touch.stopPropagation();
         buttonSize = global.screenWidth / 12;
-
+        // console.log(touch.touches[0].clientX + "," + touch.touches[0].clientY);
+        // console.log(this);
         if (!this.directionLock) {
             if (touch.touches[1]) {
 
-                if (touch.touches[1].clientX <= this.width / 2 + buttonSize && touch.touches[1].clientX >= this.width / 2 - buttonSize) {
+                if (touch.touches[1].clientX <= this.width -3*buttonSize - 10 + buttonSize && touch.touches[1].clientX >= this.width -3*buttonSize - 10 - buttonSize) {
                     if (touch.touches[1].clientY <= this.height && touch.touches[1].clientY >= this.height - 2 * buttonSize) {
                         this.parent.socket.emit('sprint');
                     }
@@ -222,7 +223,7 @@ class Canvas {
                     }
                 }
             } else {
-                if (touch.touches[0].clientX <= this.width / 2 + buttonSize && touch.touches[0].clientX >= this.width / 2 - buttonSize) {
+                if (touch.touches[0].clientX <= this.width -3*buttonSize - 10 + buttonSize && touch.touches[0].clientX >= this.width -3*buttonSize - 10 - buttonSize) {
                     if (touch.touches[0].clientY <= this.height && touch.touches[0].clientY >= this.height - 2 * buttonSize) {
                         this.parent.socket.emit('sprint');
                     }
@@ -254,6 +255,7 @@ class Canvas {
     }
 
     touchEnd(touch) {
+        // console.log(this.width + "," + buttonSize);
         touch.preventDefault();
         buttonSize = global.screenWidth / 12;
         if (!this.directionLock) {
@@ -288,11 +290,13 @@ class Canvas {
                 this.parent.powerTime = new Date().getTime();
             this.parent.resend = false;
         } else if (key === 101) {
-            setInterval(this.parent.benchmark, 100);
-            // this.parent.socket.emit('sprint');
+            // setInterval(this.parent.benchmark, 100);
+            this.parent.socket.emit('sprint');
         } else if (key >= 49 && key <= 54) {
             //console.log(key-49);
             this.parent.socket.emit('5', key - 49);
+        } else if (event.key === 'r') {
+            setInterval(this.parent.benchmark, 100);
         }
     }
 }

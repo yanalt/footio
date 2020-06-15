@@ -16,24 +16,21 @@
     <script>
         function goFullScreen() {
             var canvas = document.getElementById("cvs");
-
             var viewport = document.querySelector("meta[name=viewport]");
             var content = viewport.content;
             console.log("fullscreen activated");
-            if (canvas.requestFullscreen)
-                canvas.requestFullScreen();
-            else if (canvas.webkitRequestFullScreen)
+            if (canvas.webkitRequestFullScreen)
                 canvas.webkitRequestFullScreen();
             else if (canvas.mozRequestFullScreen)
                 canvas.mozRequestFullScreen();
 
-            viewport.content = 'what=ever, user-scalable=no';
+            // viewport.content = 'what=ever, user-scalable=no';
 
             window.setTimeout(function () {
                 viewport.content = content;
-                window.alert("You are now in full screen!");
-                canvas.width = window.innerWidth; // Or window.screen.available.width
-                canvas.height = window.innerHeight;
+                // window.alert("You are now in full screen!");
+                // canvas.width = window.innerWidth; // Or window.screen.available.width
+                // canvas.height = window.innerHeight;
             }, 1);
         }
 
