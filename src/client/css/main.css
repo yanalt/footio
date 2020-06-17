@@ -4,22 +4,25 @@
 }
 
 body {
-    overflow:hidden;
+    overflow: hidden;
 }
 
-html, body {
+body,
+html {
     background-color: #222;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        -webkit-tap-highlight-color: rgba(0,0,0,0);
-        -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-tap-highlight-color: transparent;
 }
 
-html, body, canvas {
+body,
+canvas,
+html {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -27,101 +30,31 @@ html, body, canvas {
 }
 
 div {
-    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
-    -moz-user-select: none; /* mozilla browsers */
-    -khtml-user-select: none; /* webkit (konqueror) browsers */
-    -ms-user-select: none; /* IE10+ */
+    -webkit-user-select: none;
+    /* webkit (safari, chrome) browsers */
+    -moz-user-select: none;
+    /* mozilla browsers */
+    -khtml-user-select: none;
+    /* webkit (konqueror) browsers */
+    -ms-user-select: none;
+    /* IE10+ */
 }
 
-
-#fullscreen {
+#angry {
     position: absolute;
     border: none;
-    top: 30px;
-    right: 10px;
+    bottom: 30px;
+    left: 170px;
     width: 70px;
     height: 30px;
     font-size: 30px;
     background-color: transparent;
 }
-#smiley {
+#angryNum {
     position: absolute;
     border: none;
-    top: 30px;
-    right: 100px;
-    width: 70px;
-    height: 30px;
-    font-size: 30px;
-    background-color: transparent;
-}
-#smileyNum {
-    position: absolute;
-    border: none;
-    top: 30px;
-    right: 100px;
-    width: 70px;
-    height: 30px;
-    font-size: 10px;
-    opacity: 0.5;
-    background-color: transparent;
-}
-#poopy {
-    position: absolute;
-    border: none;
-    top: 30px;
-    right: 170px;
-    width: 70px;
-    height: 30px;
-    font-size: 30px;
-    background-color: transparent;
-}
-#poopyNum {
-    position: absolute;
-    border: none;
-    top: 30px;
-    right: 170px;
-    width: 70px;
-    height: 30px;
-    font-size: 10px;
-    opacity: 0.5;
-    background-color: transparent;
-}
-#xd {
-    position: absolute;
-    border: none;
-    top: 30px;
-    right: 240px;
-    width: 70px;
-    height: 30px;
-    font-size: 30px;
-    background-color: transparent;
-}
-#xdNum {
-    position: absolute;
-    border: none;
-    top: 30px;
-    right: 240px;
-    width: 70px;
-    height: 30px;
-    font-size: 10px;
-    opacity: 0.5;
-    background-color: transparent;
-}
-#finger {
-    position: absolute;
-    border: none;
-    top: 30px;
-    right: 310px;
-    width: 70px;
-    height: 30px;
-    font-size: 30px;
-    background-color: transparent;
-}
-#fingerNum {
-    position: absolute;
-    border: none;
-    top: 30px;
-    right: 310px;
+    bottom: 30px;
+    left: 170px;
     width: 70px;
     height: 30px;
     font-size: 10px;
@@ -131,8 +64,8 @@ div {
 #hmmm {
     position: absolute;
     border: none;
-    top: 30px;
-    right: 380px;
+    bottom: 30px;
+    left: 240px;
     width: 70px;
     height: 30px;
     font-size: 30px;
@@ -141,29 +74,71 @@ div {
 #hmmmNum {
     position: absolute;
     border: none;
-    top: 30px;
-    right: 380px;
+    bottom: 30px;
+    left: 240px;
     width: 70px;
     height: 30px;
     font-size: 10px;
     opacity: 0.5;
     background-color: transparent;
 }
-#angry {
+#finger {
     position: absolute;
     border: none;
-    top: 30px;
-    right: 450px;
+    bottom: 30px;
+    left: 310px;
     width: 70px;
     height: 30px;
     font-size: 30px;
     background-color: transparent;
 }
-#angryNum {
+#fingerNum {
     position: absolute;
     border: none;
-    top: 30px;
-    right: 450px;
+    bottom: 30px;
+    left: 310px;
+    width: 70px;
+    height: 30px;
+    font-size: 10px;
+    opacity: 0.5;
+    background-color: transparent;
+}
+#xd {
+    position: absolute;
+    border: none;
+    bottom: 30px;
+    left: 380px;
+    width: 70px;
+    height: 30px;
+    font-size: 30px;
+    background-color: transparent;
+}
+#xdNum {
+    position: absolute;
+    border: none;
+    bottom: 30px;
+    left: 380px;
+    width: 70px;
+    height: 30px;
+    font-size: 10px;
+    opacity: 0.5;
+    background-color: transparent;
+}
+#poopy {
+    position: absolute;
+    border: none;
+    bottom: 30px;
+    left: 450px;
+    width: 70px;
+    height: 30px;
+    font-size: 30px;
+    background-color: transparent;
+}
+#poopyNum {
+    position: absolute;
+    border: none;
+    bottom: 30px;
+    left: 450px;
     width: 70px;
     height: 30px;
     font-size: 10px;
@@ -171,7 +146,7 @@ div {
     background-color: transparent;
 }
 
-p{
+p {
     font-size: 14px;
 }
 
@@ -219,12 +194,9 @@ p{
     font-size: 16.1px;
 }
 
-
-
 #startMenu {
     position: relative;
-    margin: auto;
-    margin-top: 100px;
+    margin: 100px auto auto;
     width: 350px;
     padding: 20px;
     border-radius: 5px;
@@ -254,16 +226,16 @@ p{
     margin-bottom: 10px;
     outline: none;
 }
-
-#playerNameInput:focus, #playerNameInput.focus {
+#playerNameInput.focus,
+#playerNameInput:focus {
     border: solid 1px #CCCCCC;
     box-shadow: 0 0 3px 1px #DDDDDD;
 }
 
-#startButton, #spectateButton {
+#spectateButton,
+#startButton {
     position: relative;
-    margin: auto;
-    margin-top: 10px;
+    margin: 10px auto auto;
     width: 100%;
     height: 40px;
     box-sizing: border-box;
@@ -282,9 +254,10 @@ p{
     -webkit-border-radius: 5px;
     margin-bottom: 10px;
 }
-
-#spectateButton:active, #spectateButton:hover,
-#startButton:active, #startButton:hover {
+#spectateButton:active,
+#spectateButton:hover,
+#startButton:active,
+#startButton:hover {
     top: 1px;
     background: #55D88B;
     outline: none;
@@ -294,8 +267,7 @@ p{
 
 #settingsButton {
     position: relative;
-    margin: auto;
-    margin-top: 10px;
+    margin: 10px auto auto;
     width: 100%;
     height: 40px;
     box-sizing: border-box;
@@ -314,8 +286,8 @@ p{
     -webkit-border-radius: 5px;
     margin-bottom: 10px;
 }
-
-#settingsButton:active, #settingsButton:hover {
+#settingsButton:active,
+#settingsButton:hover {
     top: 1px;
     background: #55D88B;
     outline: none;
@@ -323,7 +295,8 @@ p{
     box-shadow: none;
 }
 
-#settings, #startMenuWrapper {
+#settings,
+#startMenuWrapper {
     -webkit-transition: max-height 1s;
     -moz-transition: max-height 1s;
     -ms-transition: max-height 1s;
@@ -350,7 +323,7 @@ p{
 #startMenu .input-error {
     color: red;
     opacity: 0;
-    font-size : 12px;
+    font-size: 12px;
 }
 
 #startMenuWrapper {
@@ -363,15 +336,12 @@ p{
     left: 0;
     opacity: 0;
 }
-
-
-input [type="image"]:focus{
- border:none;
- outline: 1px solid transparent;
- border-style: none;
+input [type="image"]:focus {
+    border: none;
+    outline: 1px solid transparent;
+    border-style: none;
 }
-
 *:focus {
- outline: 1px solid transparent;
- border-style: none;
+    outline: 1px solid transparent;
+    border-style: none;
 }

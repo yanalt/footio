@@ -9,7 +9,7 @@ var currentFrame = 0;
 var comArr = [];
 var comIndex = 0;
 var characterSprites = [];
-var characterAmount = 38;
+var characterAmount = 999;
 var ballSprites = [];
 var disconnected = false;
 
@@ -55,10 +55,6 @@ function initCommercialImages(count) {
 function emojiAlignment(resizing) {
     var element;
     if (global.usingMobileVersion && !resizing) {
-        element = document.getElementById('smileyNum');
-        element
-            .parentNode
-            .removeChild(element);
         element = document.getElementById('poopyNum');
         element
             .parentNode
@@ -931,9 +927,7 @@ function gameLoop() {
 
 window.addEventListener('resize', resize);
 
-document
-    .getElementById('smiley')
-    .addEventListener('touchstart', sendEmoji);
+
 document
     .getElementById('poopy')
     .addEventListener('touchstart', sendEmoji);
@@ -953,9 +947,6 @@ document
 function sendEmoji(e) {
     //console.log(e.srcElement.id);
     switch (e.srcElement.id) {
-        case 'smiley':
-            socket.emit('5', 5);
-            break;
         case 'poopy':
             socket.emit('5', 4);
             break;

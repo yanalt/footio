@@ -14,25 +14,25 @@
     <audio id="goal3" src="audio/arabic3a.mp3"></audio>
     <audio id="goal4" src="audio/arabic4a.mp3"></audio>
     <script>
-        function goFullScreen() {
-            var canvas = document.getElementById("cvs");
-            var viewport = document.querySelector("meta[name=viewport]");
-            var content = viewport.content;
-            console.log("fullscreen activated");
-            if (canvas.webkitRequestFullScreen)
-                canvas.webkitRequestFullScreen();
-            else if (canvas.mozRequestFullScreen)
-                canvas.mozRequestFullScreen();
+        // function goFullScreen() {
+        //     var canvas = document.getElementById("cvs");
+        //     var viewport = document.querySelector("meta[name=viewport]");
+        //     var content = viewport.content;
+        //     console.log("fullscreen activated");
+        //     if (canvas.webkitRequestFullScreen)
+        //         canvas.webkitRequestFullScreen();
+        //     else if (canvas.mozRequestFullScreen)
+        //         canvas.mozRequestFullScreen();
 
-            // viewport.content = 'what=ever, user-scalable=no';
+        //     // viewport.content = 'what=ever, user-scalable=no';
 
-            window.setTimeout(function () {
-                viewport.content = content;
-                // window.alert("You are now in full screen!");
-                // canvas.width = window.innerWidth; // Or window.screen.available.width
-                // canvas.height = window.innerHeight;
-            }, 1);
-        }
+        //     window.setTimeout(function () {
+        //         viewport.content = content;
+        //         // window.alert("You are now in full screen!");
+        //         // canvas.width = window.innerWidth; // Or window.screen.available.width
+        //         // canvas.height = window.innerHeight;
+        //     }, 1);
+        // }
 
     </script>
 </head>
@@ -40,19 +40,17 @@
 <body>
     <div id="gameAreaWrapper">
         <canvas tabindex="1" id="cvs"></canvas>
-        <button onclick="goFullScreen();" id="fullscreen" class="emoji" alt="fullscreen">📺</button>
+        <!-- <button onclick="goFullScreen();" id="fullscreen" class="emoji" alt="fullscreen">📺</button> -->
         <div id="angryNum" class="emojiNum" alt="angryNum">1</div>
         <div id="hmmmNum" class="emojiNum" alt="hmmmNum">2</div>
         <div id="fingerNum" class="emojiNum" alt="fingerNum">3</div>
         <div id="xdNum" class="emojiNum" alt="xdNum">4</div>
         <div id="poopyNum" class="emojiNum" alt="poopyNum">5</div>
-        <div id="smileyNum" class="emojiNum" alt="smileyNum">6</div>
         <div id="angry" class="emoji" alt="angry">😠</div>
         <div id="hmmm" class="emoji" alt="hmmm">🤔</div>
         <div id="finger" class="emoji" alt="finger">☝</div>
         <div id="xd" class="emoji" alt="xd">😂</div>
         <div id="poopy" class="emoji" alt="poopy">💩</div>
-        <div id="smiley" class="emoji" alt="smiley">😁</div>
         <div id="mobile">
         </div>
     </div>

@@ -4,6 +4,7 @@
 
 var cfg = require('../../../config.json');
 
+
 exports.validNick = function (nickname) {
     var regex = /^\w*$/;
     return regex.exec(nickname) !== null;
@@ -12,13 +13,13 @@ exports.validNick = function (nickname) {
 exports.slurNick = function (nickname) {
     if(nickname==null)
         return false;
-    var regex = RegExp("nigger");
+    var regex = RegExp("nigg");
     if (nickname.search(regex) != -1)
         return true;
-    regex = RegExp("niqqer");
+    regex = RegExp("niqq");
     if (nickname.search(regex) != -1)
         return true;
-    regex = RegExp("ni99er");
+    regex = RegExp("ni99");
     if (nickname.search(regex) != -1)
         return true;
     return false;
