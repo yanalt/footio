@@ -120,25 +120,30 @@ var C = SAT.Circle;
 app.use(express.static(__dirname + '/../client'));
 
 function updateCapacity(port) {
-    fs
-        .readFile('../capacity.json', 'utf8', function readFileCallback(err, data) {
-            if (err) {
-                console.log(err);
-                console.log("read failure");
-            } else if (port > 3001) {
-                let obj = JSON.parse(data);
-                obj.ports[port - 3001 - 1].players = users.length;
-                let json = JSON.stringify(obj);
-                fs.writeFile('../capacity.json', json, 'utf8', function writeFileCallback(err, data) {
-                    if (err) {
-                        console.log(err);
-                        console.log("write failure");
-                    }
-                });
-            } else {
-                console.log("port not in range");
-            }
-        });
+    try {
+        fs
+            .readFile('../capacity.json', 'utf8', function readFileCallback(err, data) {
+                if (err) {
+                    console.log(err);
+                    console.log("read failure");
+                } else if (port > 3001) {
+                    console.log(data);
+                    let obj = JSON.parse(data);
+                    obj.ports[port - 3001 - 1].players = users.length;
+                    let json = JSON.stringify(obj);
+                    fs.writeFile('../capacity.json', json, 'utf8', function writeFileCallback(err, data) {
+                        if (err) {
+                            console.log(err);
+                            console.log("write failure");
+                        }
+                    });
+                } else {
+                    console.log("port not in range");
+                }
+            });
+    } finally {
+        console.log('lol');
+    }
 }
 
 function moveGoalkeeper() {
@@ -429,9 +434,9 @@ function confirmSkin(conf) {
     }
     // console.log(conf);
     return axios({
-            method: 'post',
-            url: 'http://localhost:3001/users/skinconfirm',
-            // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when deployed
+            method: 'post', url: 'http://localhost:3001/users/skinconfirm',
+            // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
+            // deployed
             data: {
                 skin: conf
             }
@@ -456,7 +461,7 @@ io
         var currentPlayer = {
             id: -1,
             socketId: socket.id,
-            skinsprite: "",
+            skinsprite: 0,
             frame: 0,
             hue: 0,
             team: 0,
@@ -492,7 +497,7 @@ io
                     if (response) 
                         player.skinsprite = response.skinsprite;
                     else 
-                        player.skinsprite = "";
+                        player.skinsprite = 0;
                     player.hue = teams[0].player_amount > teams[1].player_amount
                         ? 0
                         : 220;
@@ -505,14 +510,12 @@ io
                     player.target.x = 0;
                     player.target.y = 0;
                     player.frame = 0;
-                    if (type === 'player') {
-                        player.x = position.x;
-                        player.y = position.y;
-                        teams[player.team].player_amount++;
-                        player.carrier = false;
-                        player.w = 50;
-                        player.h = 50;
-                    }
+                    player.x = position.x;
+                    player.y = position.y;
+                    teams[player.team].player_amount++;
+                    player.carrier = false;
+                    player.w = 50;
+                    player.h = 50;
                     player.sprint = 0;
                     player.lastX = -1;
                     player.lastY = -1;
@@ -560,7 +563,7 @@ io
             updateCapacity(serverport);
             socket
                 .broadcast
-                .emit('playerDisconnect', {name: currentPlayer.name});
+                .emit('playerDisconnect', {id: currentPlayer.id});
         });
 
         socket.on('5', function (data) { //emoji
@@ -584,13 +587,13 @@ io
                                 }
                             }
                         }
-                        if (reason !== '') {
-                        } else {
-                        }
+                        if (reason !== '') {} else {}
                         socket.emit('serverMSG', 'User ' + users[e].name + ' was kicked by ' + currentPlayer.name);
-                        sockets[users[e].socketId].emit('kick', reason);
-                        sockets[users[e].socketId].disconnect();
-                        users.splice(e, 1);
+                        if (sockets[users[e].socketId]) {
+                            sockets[users[e].socketId].emit('kick', reason);
+                            sockets[users[e].socketId].disconnect();
+                            users.splice(e, 1);
+                        }
                         worked = true;
                     }
                 }
@@ -844,6 +847,10 @@ function controlBots() {
     for (let i = 0; i < users.length; i++) {
         // users[i].name = users[i].x + "," + users[i].y;
         if (users[i].isBot) {
+            if(users[i].target.x==users[i].x&&users[i].target.y==users[i].y){
+                console.log('warning! bug!');
+                users[i].command = users[i].team;
+            }
             if (Math.abs(users[i].target.x) < 1 && Math.abs(users[i].target.y) < 1) {
                 users[i].command = -1;
             }
@@ -882,7 +889,6 @@ function controlBots() {
                 users[i].command = 6;
                 gatherers[users[i].team]++;
             }
-
 
             let ambitionX,
                 ambitionY,
@@ -1233,9 +1239,11 @@ function ballspawn(where) {
 function afkCheck() {
     for (var i = 0; i < users.length; i++) {
         if (users[i].x == users[i].lastX && users[i].y == users[i].lastY) {
-            sockets[users[i].socketId].emit('kick', 'Inactivity.');
-            sockets[users[i].socketId].disconnect();
-            users.splice(i, 1);
+            if (sockets[users[i].socketId]) {
+                sockets[users[i].socketId].emit('kick', 'Inactivity.');
+                sockets[users[i].socketId].disconnect();
+                users.splice(i, 1);
+            }
             console.log("KICKED " + i);
         }
     }
@@ -1260,7 +1268,7 @@ setInterval(moveloop, 1000 / 60);
 setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
-setInterval(afkCheck, 500000); //change this to 1 minute
+// setInterval(afkCheck, 60000); //change this to 1 minute
 // setInterval(bandwidthCheck, bandWidthIteration);
 
 if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {

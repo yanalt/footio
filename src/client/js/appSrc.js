@@ -1,3 +1,5 @@
+// bug: two bots get stuck on each other with the ball
+
 var io = require('socket.io-client');
 var Canvas = require('./canvas');
 var global = require('./global');
@@ -363,7 +365,7 @@ function drawBall(ball) {
     var ballX = ball.x - player.x + global.screenWidth / 2;
     var ballY = ball.y - player.y + global.screenHeight / 2;
     // graph.drawImage(character, ballX - 15, ballY - 15, 30, 30);
-    console.log(ball.frame);
+    // console.log(ball.frame);
     if (!ball.frame) 
         ball.frame = 0;
     graph.drawImage(ballSprites[(Math.floor(ball.frame / 10) % 10)], ballX - 15, ballY - 15, 30, 30);
@@ -626,18 +628,13 @@ function drawPlayers() {
         graph.fillStyle = playerConfig.textColor;
         graph.font = 'bold ' + fontSize + 'px sans-serif';
 
-        if (global.toggleMassState === 0) {
-            graph.strokeText(nameCell, circle.x, circle.y);
-            graph.fillText(nameCell, circle.x, circle.y);
-        } else {
-            graph.strokeText(nameCell, circle.x, circle.y);
-            graph.fillText(nameCell, circle.x, circle.y);
-            graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
-            if (nameCell.length === 0) 
-                fontSize = 0;
-            graph.strokeText(Math.round(30), circle.x, circle.y + fontSize);
-            graph.fillText(Math.round(30), circle.x, circle.y + fontSize);
-        }
+        graph.strokeText(nameCell, circle.x, circle.y);
+        graph.fillText(nameCell, circle.x, circle.y);
+        graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
+        if (nameCell.length === 0) 
+            fontSize = 0;
+        graph.strokeText(Math.round(30), circle.x, circle.y + fontSize);
+        graph.fillText(Math.round(30), circle.x, circle.y + fontSize);
 
         var srcX;
         var srcY;
@@ -687,7 +684,7 @@ function drawgoals() {
         x: global.screenWidth / 2 - player.x - 100,
         y: (global.screenHeight / 2 - player.y) + (global.gameHeight / 2) - (global.goalWidth / 2)
     }
-    
+
     drawNet(rectTopLeft);
     rectTopLeft = {
         x: global.gameWidth + global.screenWidth / 2 - player.x,
@@ -867,15 +864,7 @@ function animloop() {
 }
 
 function gameLoop() {
-    if (global.died) {
-        graph.fillStyle = '#333333';
-        graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
-
-        graph.textAlign = 'center';
-        graph.fillStyle = '#FFFFFF';
-        graph.font = 'bold 30px sans-serif';
-        graph.fillText('You died!', global.screenWidth / 2, global.screenHeight / 2);
-    } else if (!global.disconnected) {
+    if (!global.disconnected) {
         if (global.gameStart) {
             graph.fillStyle = global.backgroundColor;
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
@@ -926,7 +915,6 @@ function gameLoop() {
 }
 
 window.addEventListener('resize', resize);
-
 
 document
     .getElementById('poopy')

@@ -30,14 +30,11 @@ class Canvas {
             self.resend = true;
             self.directionUp(event);
             var key = (event.which || event.keyCode) + 32;
-            if (key === global.KEY_FIREFOOD && this.parent.resend && self.powerTime != 0) {
+            if (key === global.KEY_KICK && this.parent.resend && self.powerTime != 0) {
                 self.powerTime = (new Date().getTime() - self.powerTime);
                 this.parent.socket.emit('1', self.powerTime / 100);
                 this.parent.resend = false;
                 self.powerTime = 0;
-            } else if (key === global.KEY_SPLIT && this.parent.resend) {
-                this.parent.socket.emit('2');
-                this.parent.resend = false;
             }
         }, false);
         this.cv.addEventListener('keydown', this.directionDown, false);
@@ -118,28 +115,6 @@ class Canvas {
         return result;
     }
 
-    // Updates the target according to the directions in the directions array.
-    updateTarget(list) {
-        this.target = {
-            x: 0,
-            y: 0
-        };
-        var directionHorizontal = 0;
-        var directionVertical = 0;
-        for (var i = 0, len = list.length; i < len; i++) {
-            if (directionHorizontal === 0) {
-                if (list[i] == global.KEY_LEFT) directionHorizontal -= Number.MAX_VALUE;
-                else if (list[i] == global.KEY_RIGHT) directionHorizontal += Number.MAX_VALUE;
-            }
-            if (directionVertical === 0) {
-                if (list[i] == global.KEY_UP) directionVertical -= Number.MAX_VALUE;
-                else if (list[i] == global.KEY_DOWN) directionVertical += Number.MAX_VALUE;
-            }
-        }
-        this.target.x += directionHorizontal;
-        this.target.y += directionVertical;
-        global.target = this.target;
-    }
 
     directional(key) {
         return this.horizontal(key) || this.vertical(key);
@@ -285,7 +260,7 @@ class Canvas {
 
     keyInput(event) {
         var key = (event.which || event.keyCode);
-        if (key === global.KEY_FIREFOOD) {
+        if (key === global.KEY_KICK) {
             if (this.parent.powerTime == 0)
                 this.parent.powerTime = new Date().getTime();
             this.parent.resend = false;
