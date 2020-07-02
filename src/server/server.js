@@ -847,10 +847,7 @@ function controlBots() {
     for (let i = 0; i < users.length; i++) {
         // users[i].name = users[i].x + "," + users[i].y;
         if (users[i].isBot) {
-            if(users[i].target.x==users[i].x&&users[i].target.y==users[i].y){
-                console.log('warning! bug!');
-                users[i].command = users[i].team;
-            }
+            
             if (Math.abs(users[i].target.x) < 1 && Math.abs(users[i].target.y) < 1) {
                 users[i].command = -1;
             }
@@ -948,6 +945,7 @@ function controlBots() {
                     break;
                 case 6:
                     commandString = "gather!";
+                    console.log("gather! " +users[i].name);
                     ambitionX = ball.x - users[i].x;
                     ambitionY = ball.y - users[i].y;
                     // users[i].target.x = ball.x - users[i].x; users[i].target.y = ball.y -
@@ -1075,7 +1073,7 @@ function updateIdOfUsers() {
 function gameloop() {
     if (users.length > 0) {
         updateIdOfUsers();
-        balanceBots();
+        // balanceBots();
 
         users.forEach(function (u) {
             if (!u.isBot) {
