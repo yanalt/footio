@@ -24,6 +24,27 @@ const https = require("https"),
 var options = {};
 var ServerTLS = {};
 var io = {};
+let difficulty = 'hard';
+let maxSpeed = 5.25;
+let serverLocation = 'unknown';
+
+if(process.argv[3] === 'easy' || process.argv[3] === 'normal')
+    difficulty = process.argv[3];
+
+if(difficulty === 'hard'){
+    maxSpeed = 5.25;
+}
+if(difficulty === 'normal'){
+    maxSpeed = 4.25;
+}
+if(difficulty === 'easy'){
+    maxSpeed = 3.25;
+}
+
+if(process.argv[4]){
+    serverLocation = process.argv[4];
+}
+
 if (ipaddress == '0.0.0.0') {
     options = {
         key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
@@ -55,9 +76,7 @@ gatherers[1] = 0;
 var bandwidth = 0;
 var totalBandwidth = 0;
 var bandwidthTime = Date.now();
-var listOfIds = [
-    -1,
-    -1,
+var listOfIds = [-1,-1,
     -1,
     -1,
     -1,
@@ -119,31 +138,22 @@ var C = SAT.Circle;
 
 app.use(express.static(__dirname + '/../client'));
 
-function updateCapacity(port) {
-    try {
-        fs
-            .readFile('../capacity.json', 'utf8', function readFileCallback(err, data) {
-                if (err) {
-                    console.log(err);
-                    console.log("read failure");
-                } else if (port > 3001) {
-                    console.log(data);
-                    let obj = JSON.parse(data);
-                    obj.ports[port - 3001 - 1].players = users.length;
-                    let json = JSON.stringify(obj);
-                    fs.writeFile('../capacity.json', json, 'utf8', function writeFileCallback(err, data) {
-                        if (err) {
-                            console.log(err);
-                            console.log("write failure");
-                        }
-                    });
-                } else {
-                    console.log("port not in range");
-                }
-            });
-    } finally {
-        console.log('lol');
-    }
+function updateCapacity() {
+    return axios({
+            method: 'post', url: 'http://localhost:3001/updateRooms',
+            // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
+            // deployed
+            data: {
+                ip: ipaddress,
+                port: serverport,
+                location: serverLocation,
+                difficulty,
+                playerAmount: users.length
+            }
+        }).catch((e) => {
+            console.log('failed response from updateRooms');
+            // console.log(e);
+        });
 }
 
 function moveGoalkeeper() {
@@ -160,7 +170,7 @@ function moveGoalkeeper() {
         bot: (c.gameHeight / 2) + (c.goalWidth / 2)
     };
 
-    var goalkeeperSpeed = 6.5;
+    var goalkeeperSpeed = maxSpeed;
 
     // goal calculation
     if (ball.x >= 0 && ball.x <= c.gameWidth) {
@@ -216,7 +226,7 @@ function moveGoalkeeper() {
 function movePlayer(player) {
     if (player) {
         if (player.sprint >= 950) 
-            player.speed = 8;
+            player.speed = maxSpeed*1.5;
         if (player.sprint > 0) 
             player.sprint--;
         if (player.sprint < 0) 
@@ -231,11 +241,11 @@ function movePlayer(player) {
         var deg = Math.atan2(target.y, target.x);
         var slowDown = 1;
         if (!player.speed) 
-            player.speed = 5.25;
+            player.speed = maxSpeed;
         var deltaY = player.speed * Math.sin(deg) / slowDown;
         var deltaX = player.speed * Math.cos(deg) / slowDown;
 
-        if (player.speed > 5.25) {
+        if (player.speed > maxSpeed) {
             player.speed -= 0.5;
         }
         if (dist < (50 + c.playerRadius)) {
@@ -543,9 +553,18 @@ io
             socket.emit('pongcheck');
         });
 
+        socket.on('err',function(e){
+            console.log(e);
+        });
+
         socket.on('windowResized', function (data) {
             currentPlayer.screenWidth = data.screenWidth;
             currentPlayer.screenHeight = data.screenHeight;
+            if(currentPlayer.screenWidth<1920){
+                currentPlayer.screenWidth = 1920;
+                currentPlayer.screenHeight = 1080;
+            }
+            console.log(currentPlayer.screenWidth+' '+ currentPlayer.screenHeight);
         });
 
         socket.on('respawn', function () {
@@ -555,6 +574,7 @@ io
         });
 
         socket.on('disconnect', function () {
+            console.log('A player has disconnected');
             if (util.findIndex(users, currentPlayer.id) > -1) {
                 kickBall(currentPlayer, 1, 1);
                 teams[currentPlayer.team].player_amount++;
@@ -567,6 +587,7 @@ io
         });
 
         socket.on('5', function (data) { //emoji
+            console.log(data);
             if (data >= 0 && data <= 5) 
                 currentPlayer.emoji = data;
             }
@@ -639,7 +660,11 @@ function kickBall(currentPlayer, power, direction) { //direction is for reverse 
         };
         ball.x = currentPlayer.x;
         ball.y = currentPlayer.y;
-        ball.speed = 9 + power * 1.5;
+        ball.speed = maxSpeed + 3.75 + power * 1.5;
+        users.forEach((u)=>{
+            if(u.socketId)
+                sockets[u.socketId].emit('kickBall');
+        });
     }
 }
 
@@ -740,7 +765,7 @@ function moveloop() {
             if (users[i].carrier) 
                 carrier = i;
             }
-        }
+    }
     moveBall(ball);
     if (carrier != -1) {
         ball.x = users[carrier].x;
@@ -846,7 +871,7 @@ function controlBots() {
     );
     for (let i = 0; i < users.length; i++) {
         // users[i].name = users[i].x + "," + users[i].y;
-        if (users[i].isBot) {
+        if (users[i].isBot) { //FIX BUG
             
             if (Math.abs(users[i].target.x) < 1 && Math.abs(users[i].target.y) < 1) {
                 users[i].command = -1;
@@ -882,7 +907,8 @@ function controlBots() {
                     }
                 }
             }
-            if (gatherers[users[i].team] < 2 && util.getRealDistance(users[i], ball) < 400 && ball.isLoose) { //if he is close enough, then gather a loose ball
+            let realDist = util.getRealDistance(users[i], ball);
+            if (gatherers[users[i].team] < 2 && realDist < 400 && realDist > 10 && ball.isLoose) { //if he is close enough, then gather a loose ball
                 users[i].command = 6;
                 gatherers[users[i].team]++;
             }
@@ -945,7 +971,7 @@ function controlBots() {
                     break;
                 case 6:
                     commandString = "gather!";
-                    console.log("gather! " +users[i].name);
+                    // console.log("gather! " +users[i].name);
                     ambitionX = ball.x - users[i].x;
                     ambitionY = ball.y - users[i].y;
                     // users[i].target.x = ball.x - users[i].x; users[i].target.y = ball.y -
@@ -1073,7 +1099,7 @@ function updateIdOfUsers() {
 function gameloop() {
     if (users.length > 0) {
         updateIdOfUsers();
-        // balanceBots();
+        balanceBots();
 
         users.forEach(function (u) {
             if (!u.isBot) {
@@ -1088,6 +1114,10 @@ function gameloop() {
                     blue: teams[0].score,
                     red: teams[1].score
                 }, users);
+            }
+            if(u.screenWidth<1920){
+                u.screenWidth= 1920;
+                u.screenHeight= 1080;
             }
         });
     }
@@ -1266,6 +1296,7 @@ setInterval(moveloop, 1000 / 60);
 setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
+setInterval(updateCapacity, 1000 * 5);
 // setInterval(afkCheck, 60000); //change this to 1 minute
 // setInterval(bandwidthCheck, bandWidthIteration);
 
