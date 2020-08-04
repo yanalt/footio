@@ -12,7 +12,7 @@ var quadtree = require('simple-quadtree');
 
 // IP configurations. change in the config and not here.
 var ipaddress = c.host || process.env.OPENSHIFT_NODEJS_IP || process.env.IP;
-var serverport = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || c.port;
+var serverport = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT;
 
 var express = require('express');
 var fs = require('fs');
@@ -45,16 +45,16 @@ if(process.argv[4]){
     serverLocation = process.argv[4];
 }
 
-if (ipaddress == '0.0.0.0') {
-    options = {
-        key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
-        cert: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/fullchain.pem")
-    };
-    ServerTLS = https.createServer(options, app);
-    io = require('socket.io')(ServerTLS);
-} else {
+// if (ipaddress == '0.0.0.0') { 
+//     options = {
+//         key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
+//         cert: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/fullchain.pem")
+//     };
+//     ServerTLS = https.createServer(options, app);
+//     io = require('socket.io')(ServerTLS);
+// } else {
     io = require('socket.io')(http);
-}
+// }
 
 var SAT = require('sat');
 const axios = require('axios');
@@ -131,7 +131,7 @@ goalkeepers[1] = {
         y: c.gameHeight / 2
     }
 };
-var sockets = {};
+var sockets = [];
 
 var V = SAT.Vector;
 var C = SAT.Circle;
@@ -140,7 +140,7 @@ app.use(express.static(__dirname + '/../client'));
 
 function updateCapacity() {
     return axios({
-            method: 'post', url: 'http://localhost:3001/updateRooms',
+            method: 'post', url: c.frontEndAddress + '/updateRooms',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
@@ -152,7 +152,7 @@ function updateCapacity() {
             }
         }).catch((e) => {
             console.log('failed response from updateRooms');
-            // console.log(e);
+            console.log(e);
         });
 }
 
@@ -444,7 +444,7 @@ function confirmSkin(conf) {
     }
     // console.log(conf);
     return axios({
-            method: 'post', url: 'http://localhost:3001/users/skinconfirm',
+            method: 'post', url: c.frontEndAddress + '/users/skinconfirm',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
@@ -1048,8 +1048,15 @@ function balanceBots() {
         // {         users.splice(i, 1);     } }
         for (let i = 0; i < users.length; i++) {
             if (users[i].isBot) {
+
+                sockets.forEach((s)=>{
+                    s
+                    .emit('playerDisconnect', {id: users[i].id});
+                });
+
                 listOfIds[users[i].id] = -1;
                 users.splice(i, 1);
+
                 break;
             }
         }
@@ -1296,16 +1303,16 @@ setInterval(moveloop, 1000 / 60);
 setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
-setInterval(updateCapacity, 1000 * 5);
+setInterval(updateCapacity, 1000 * c.roomUpdateFactor);
 // setInterval(afkCheck, 60000); //change this to 1 minute
 // setInterval(bandwidthCheck, bandWidthIteration);
 
-if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
+// if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
     http
         .listen(serverport, '0.0.0.0', function () {
             console.log('[DEBUG] Listening on ' + ipaddress + ':' + serverport);
         });
-} else {
-    console.log('Running on TLS');
-    ServerTLS.listen(serverport);
-}
+// } else {
+//     console.log('Running on TLS');
+//     ServerTLS.listen(serverport);
+// }

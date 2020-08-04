@@ -1,6 +1,7 @@
 {
     "host": "localhost",
     "port": 3001,
+    "frontEndAddress": "localhost:3000",
     "gameWidth": 2200,
     "gameHeight": 1300,
     "playerRadius": 20,
@@ -9,5 +10,6 @@
     "maxPlayers": 10,
     "maxScreenWidth": 1024,
     "maxScreenHeight": 768,
-    "networkUpdateFactor": 18
+    "networkUpdateFactor": 18,
+    "roomUpdateFactor": 10
 }
