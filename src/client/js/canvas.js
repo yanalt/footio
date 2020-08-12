@@ -71,7 +71,7 @@ class Canvas {
         var key = event.which || event.keyCode;
         var self = this.parent; // have to do this so we are not using the cv object
         if (self.directional(key) && this.parent.bench == 0) {
-            self.directionLock = true;
+            // self.directionLock = true;
             if (self.newDirection(key, self.directions, true)) {
                 self.updateTarget(self.directions);
                 self.socket.emit('0', self.target);

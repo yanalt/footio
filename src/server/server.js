@@ -12,7 +12,7 @@ var quadtree = require('simple-quadtree');
 
 // IP configurations. change in the config and not here.
 var ipaddress = c.host || process.env.OPENSHIFT_NODEJS_IP || process.env.IP;
-var serverport = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT;
+var serverport = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || c.port;
 
 var express = require('express');
 var fs = require('fs');
@@ -45,16 +45,16 @@ if(process.argv[4]){
     serverLocation = process.argv[4];
 }
 
-// if (ipaddress == '0.0.0.0') { 
-//     options = {
-//         key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
-//         cert: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/fullchain.pem")
-//     };
-//     ServerTLS = https.createServer(options, app);
-//     io = require('socket.io')(ServerTLS);
-// } else {
+if (ipaddress == '0.0.0.0') {
+    options = {
+        key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
+        cert: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/fullchain.pem")
+    };
+    ServerTLS = https.createServer(options, app);
+    io = require('socket.io')(ServerTLS);
+} else {
     io = require('socket.io')(http);
-// }
+}
 
 var SAT = require('sat');
 const axios = require('axios');
@@ -140,7 +140,7 @@ app.use(express.static(__dirname + '/../client'));
 
 function updateCapacity() {
     return axios({
-            method: 'post', url: c.frontEndAddress + '/updateRooms',
+            method: 'post', url: 'http://localhost:3000/updateRooms',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
@@ -152,7 +152,7 @@ function updateCapacity() {
             }
         }).catch((e) => {
             console.log('failed response from updateRooms');
-            console.log(e);
+            // console.log(e);
         });
 }
 
@@ -444,7 +444,7 @@ function confirmSkin(conf) {
     }
     // console.log(conf);
     return axios({
-            method: 'post', url: c.frontEndAddress + '/users/skinconfirm',
+            method: 'post', url: 'http://localhost:3001/users/skinconfirm',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
@@ -1275,11 +1275,17 @@ function afkCheck() {
     for (var i = 0; i < users.length; i++) {
         if (users[i].x == users[i].lastX && users[i].y == users[i].lastY) {
             if (sockets[users[i].socketId]) {
-                sockets[users[i].socketId].emit('kick', 'Inactivity.');
-                sockets[users[i].socketId].disconnect();
-                users.splice(i, 1);
+                if(users[i].isAFK){
+                    sockets[users[i].socketId].emit('kick', 'Inactivity.');
+                    sockets[users[i].socketId].disconnect();
+                    users.splice(i, 1);
+                    console.log("KICKED " + i);
+                }else{
+                    users[i].isAFK=true;
+                }
             }
-            console.log("KICKED " + i);
+        }else{
+            users[i].isAFK=false;
         }
     }
 }
@@ -1304,7 +1310,7 @@ setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
 setInterval(updateCapacity, 1000 * c.roomUpdateFactor);
-// setInterval(afkCheck, 60000); //change this to 1 minute
+setInterval(afkCheck, 60000); //change this to 1 minute
 // setInterval(bandwidthCheck, bandWidthIteration);
 
 // if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {

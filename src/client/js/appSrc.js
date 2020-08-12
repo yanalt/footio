@@ -854,14 +854,26 @@ window.cancelAnimFrame = (function (handle) {
 })();
 
 function pingCheck() {
-    global.startPingTime = Date.now();
-    socket.emit('pingcheck');
+    // global.startPingTime = Date.now();
+    // socket.emit('pingcheck');
+
+    if(alpha>=2*Math.PI)
+        alpha = 0;
+    let trgt = {
+        x: 10*Math.cos(alpha),
+        y: 10*Math.sin(alpha)
+    }
+    alpha+=0.1;
+    console.log(trgt);
+    socket.emit('0', trgt); // playerSendTarget "Heartbeat".
 }
 
 function animloop() {
-    global.animLoopHandle = window.requestAnimFrame(animloop);
-    gameLoop();
+    // global.animLoopHandle = window.requestAnimFrame(animloop);
+    // gameLoop();
 }
+
+let alpha = 0;
 
 function gameLoop() {
     if (!global.disconnected) {
@@ -881,10 +893,10 @@ function gameLoop() {
             if (global.usingMobileVersion) 
                 drawButton();
             
-            socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
+            // socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
 
         } else {
-            graph.fillStyle = '#333333';
+            graph.fillStyle = '#EEEEEE';
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
 
             graph.textAlign = 'center';
@@ -895,7 +907,7 @@ function gameLoop() {
     } else {
         if (!disconnected) {
             disconnected = true; //this is to prevent GPU from working while disconnected
-            graph.fillStyle = '#333333';
+            graph.fillStyle = '#EEEEEE';
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
 
             graph.textAlign = 'center';
@@ -984,4 +996,4 @@ function comIndexNext() { // rolls commercial signs
 }
 
 setInterval(comIndexNext, 30000);
-// setInterval(pingCheck, 3000);
+setInterval(pingCheck, 1000 / 24);
