@@ -14,11 +14,11 @@ class Canvas {
         var self = this;
 
         this.benchmark = function () {
-            global.target.x = 500 * Math.cos(self.bench);
-            global.target.y = 500 * Math.sin(self.bench);
-            self.bench++;
-            if (self.bench > 1000)
-                self.bench = 1;
+            // global.target.x = 500 * Math.cos(self.bench);
+            // global.target.y = 500 * Math.sin(self.bench);
+            // self.bench++;
+            // if (self.bench > 1000)
+            //     self.bench = 1;
         };
         this.cv = document.getElementById('cvs');
         this.cv.width = global.screenWidth;

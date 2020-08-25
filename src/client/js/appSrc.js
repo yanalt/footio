@@ -853,27 +853,29 @@ window.cancelAnimFrame = (function (handle) {
     return window.cancelAnimationFrame || window.mozCancelAnimationFrame;
 })();
 
-function pingCheck() {
-    // global.startPingTime = Date.now();
-    // socket.emit('pingcheck');
+let alpha = 0;
 
-    if(alpha>=2*Math.PI)
-        alpha = 0;
-    let trgt = {
-        x: 10*Math.cos(alpha),
-        y: 10*Math.sin(alpha)
-    }
-    alpha+=0.1;
-    console.log(trgt);
-    socket.emit('0', trgt); // playerSendTarget "Heartbeat".
+function pingCheck() {
+    global.startPingTime = Date.now();
+    socket.emit('pingcheck');
+
+
+    // if(alpha>=2*Math.PI)
+    //     alpha = 0;
+    // let trgt = {
+    //     x: 50*Math.cos(alpha),
+    //     y: 50*Math.sin(alpha)
+    // }
+    // alpha+=0.1;
+    // console.log(trgt);
+    // socket.emit('0', trgt);
+
 }
 
 function animloop() {
-    // global.animLoopHandle = window.requestAnimFrame(animloop);
-    // gameLoop();
+    global.animLoopHandle = window.requestAnimFrame(animloop);
+    gameLoop();
 }
-
-let alpha = 0;
 
 function gameLoop() {
     if (!global.disconnected) {
@@ -893,10 +895,10 @@ function gameLoop() {
             if (global.usingMobileVersion) 
                 drawButton();
             
-            // socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
+            socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
 
         } else {
-            graph.fillStyle = '#EEEEEE';
+            graph.fillStyle = '#333333';
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
 
             graph.textAlign = 'center';
@@ -907,7 +909,7 @@ function gameLoop() {
     } else {
         if (!disconnected) {
             disconnected = true; //this is to prevent GPU from working while disconnected
-            graph.fillStyle = '#EEEEEE';
+            graph.fillStyle = '#333333';
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
 
             graph.textAlign = 'center';

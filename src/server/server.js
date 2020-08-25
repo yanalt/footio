@@ -140,7 +140,7 @@ app.use(express.static(__dirname + '/../client'));
 
 function updateCapacity() {
     return axios({
-            method: 'post', url: 'http://localhost:3000/updateRooms',
+            method: 'post', url: 'https://footio.com.de/updateRooms',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
@@ -365,6 +365,7 @@ function moveBall(ball) {
                 ball.speed = 0;
                 ball.x = c.gameWidth + 200;
                 ball.y = c.gameHeight / 2;
+                sendGoalAndAssist(0);
                 return setTimeout(() => {
                     goalRestart(c.gameWidth / 4);
                 }, 3000); //red scored, so ball should be with blue now
@@ -392,6 +393,7 @@ function moveBall(ball) {
                 ball.speed = 0;
                 ball.x = 0 - 200;
                 ball.y = c.gameHeight / 2;
+                sendGoalAndAssist(1);
                 return setTimeout(() => {
                     goalRestart(-1 * c.gameWidth / 4);
                 }, 3000); //red scored, so ball should be with blue now
@@ -438,24 +440,27 @@ function balanceTeams() {
     }
 }
 
-function confirmSkin(conf) {
+async function confirmSkin(conf) {
     if (ipaddress == '0.0.0.0') {
         ipaddress = 'www.footio.com.de';
     }
-    // console.log(conf);
-    return axios({
-            method: 'post', url: 'http://localhost:3001/users/skinconfirm',
+    console.log(conf);
+    try{
+    return await axios({
+            method: 'post', url: 'https://footio.com.de/users/skinconfirm',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
                 skin: conf
             }
-        }).then(function (response) {
-        return response.data;
-    }).catch((e) => {
+        });
+       }catch(e) {
             console.log('failed response from skins');
             // console.log(e);
-        });
+            return {
+                data:null
+            };
+        }
 }
 
 io
@@ -490,7 +495,7 @@ io
             },
             speed: 0
         };
-        socket.on('gotit', function (player) {
+        socket.on('gotit', async function (player) {
 
             if (users.length >= c.maxPlayers) {
                 socket.emit('kick', 'Full server.');
@@ -501,49 +506,53 @@ io
                 socket.emit('kick', 'Invalid username.');
                 socket.disconnect();
             } else {
-                confirmSkin(player.conf).then((response) => {
-                    updateCapacity(serverport);
-                    sockets[player.socketId] = socket;
-                    if (response) 
-                        player.skinsprite = response.skinsprite;
-                    else 
-                        player.skinsprite = 0;
-                    player.hue = teams[0].player_amount > teams[1].player_amount
-                        ? 0
-                        : 220;
-                    player.team = teams[0].player_amount > teams[1].player_amount
-                        ? 1
-                        : 0;
+                let response = await confirmSkin(player.conf);
+                console.log('server data: ',response.data);
+                
+                updateCapacity(serverport);
+                sockets[player.socketId] = socket;
+                if (response.data){ 
+                    player.skinsprite = response.data.skinsprite;
+                    player.serverId = response.data.userId;
+                }
+                else 
+                    player.skinsprite = 0;
+                player.hue = teams[0].player_amount > teams[1].player_amount
+                    ? 0
+                    : 220;
+                player.team = teams[0].player_amount > teams[1].player_amount
+                    ? 1
+                    : 0;
 
-                    var radius = c.playerRadius;
-                    var position = util.randomTeamPosition(radius, player.team);
-                    player.target.x = 0;
-                    player.target.y = 0;
-                    player.frame = 0;
-                    player.x = position.x;
-                    player.y = position.y;
-                    teams[player.team].player_amount++;
-                    player.carrier = false;
-                    player.w = 50;
-                    player.h = 50;
-                    player.sprint = 0;
-                    player.lastX = -1;
-                    player.lastY = -1;
-                    player.speed = 0;
-                    // player.id = pickId();
-                    currentPlayer = player;
-                    users.push(currentPlayer);
+                var radius = c.playerRadius;
+                var position = util.randomTeamPosition(radius, player.team);
+                player.target.x = 0;
+                player.target.y = 0;
+                player.frame = 0;
+                player.x = position.x;
+                player.y = position.y;
+                teams[player.team].player_amount++;
+                player.carrier = false;
+                player.w = 50;
+                player.h = 50;
+                player.sprint = 0;
+                player.lastX = -1;
+                player.lastY = -1;
+                player.speed = 0;
+                // player.id = pickId();
+                currentPlayer = player;
+                users.push(currentPlayer);
 
-                    io.emit('playerJoin', {name: currentPlayer.name});
+                io.emit('playerJoin', {name: currentPlayer.name});
 
-                    socket.emit('gameSetup', {
-                        gameWidth: c.gameWidth,
-                        gameHeight: c.gameHeight,
-                        goalWidth: c.goalWidth,
-                        goalkeeperRadius: c.goalkeeperRadius
-                    });
-                    console.log('Total players: ' + users.length);
+                socket.emit('gameSetup', {
+                    gameWidth: c.gameWidth,
+                    gameHeight: c.gameHeight,
+                    goalWidth: c.goalWidth,
+                    goalkeeperRadius: c.goalkeeperRadius
                 });
+                console.log('Total players: ' + users.length);
+                
 
             }
 
@@ -653,13 +662,15 @@ function kickBall(currentPlayer, power, direction) { //direction is for reverse 
     if (currentPlayer.carrier) {
         currentPlayer.carrier = false;
         ball.isLoose = true;
+        if(currentPlayer.id!=ball.id)
+            ball.former = ball.id;
         ball.id = currentPlayer.id;
         ball.target = {
             x: (currentPlayer.x - currentPlayer.x + currentPlayer.target.x) * direction,
             y: (currentPlayer.y - currentPlayer.y + currentPlayer.target.y) * direction
         };
-        ball.x = currentPlayer.x;
-        ball.y = currentPlayer.y;
+        // ball.x = currentPlayer.x;
+        // ball.y = currentPlayer.y;
         ball.speed = maxSpeed + 3.75 + power * 1.5;
         users.forEach((u)=>{
             if(u.socketId)
@@ -690,12 +701,16 @@ function tickPlayer(currentPlayer) {
         if (SAT.pointInCircle(new V(ball.x, ball.y), new C(new V(currentPlayer.x, currentPlayer.y), c.playerRadius))) {
             if (ball.id != currentPlayer.id) {
                 currentPlayer.carrier = true;
+                if(currentPlayer.id!=ball.id)
+                    ball.former = ball.id;
                 ball.id = currentPlayer.id;
                 ball.isLoose = false;
                 controllingTeam = currentPlayer.team;
             } else {
                 if (ball.speed < 4) {
                     currentPlayer.carrier = true;
+                    if(currentPlayer.id!=ball.id)
+                        ball.former = ball.id;
                     ball.id = currentPlayer.id;
                     controllingTeam = currentPlayer.team;
                 } else {
@@ -768,8 +783,8 @@ function moveloop() {
     }
     moveBall(ball);
     if (carrier != -1) {
-        ball.x = users[carrier].x;
-        ball.y = users[carrier].y;
+        ball.x = users[carrier].x + 16*Math.cos(users[carrier].deg);
+        ball.y = users[carrier].y + 16*Math.sin(users[carrier].deg);
     }
     let distance = Math.sqrt(Math.pow(ball.x - goalkeepers[0].position.x, 2) + Math.pow(ball.y - goalkeepers[0].position.y, 2));
     if (distance < c.goalkeeperRadius) { //check if left(blue) goalkeeper caught the ball
@@ -908,7 +923,7 @@ function controlBots() {
                 }
             }
             let realDist = util.getRealDistance(users[i], ball);
-            if (gatherers[users[i].team] < 2 && realDist < 400 && realDist > 10 && ball.isLoose) { //if he is close enough, then gather a loose ball
+            if (gatherers[users[i].team] < 2 && realDist < 400 && realDist > 20 && ball.isLoose) { //if he is close enough, then gather a loose ball
                 users[i].command = 6;
                 gatherers[users[i].team]++;
             }
@@ -1002,7 +1017,7 @@ function controlBots() {
 }
 
 function balanceBots() {
-    let botMax = 6;
+    let botMax = 3;
     if (users.length < botMax) {
 
         bot.hue = teams[0].player_amount > teams[1].player_amount
@@ -1154,6 +1169,8 @@ function sendUpdates() {
             var dist = Math.sqrt(Math.pow(target.y, 2) + Math.pow(target.x, 2));
             var deg = Math.atan2(target.y, target.x);
 
+            u.deg = deg;
+
             var slowDown = 1;
 
             // var deltaY = u.speed * Math.sin(deg) / slowDown; var deltaX = u.speed *
@@ -1260,6 +1277,45 @@ function roughSizeOfObject(object) {
     return bytes;
 }
 
+function findPlayerById(playerId){
+    let result = users.find(u=>u.id==playerId);
+    // console.log("scorer? ", result);
+    return result;
+}
+
+function sendGoalAndAssist(scoringTeam){
+    let scorer = findPlayerById(ball.id);
+    let assister = findPlayerById(ball.former);
+    try{
+        if(scorer && scorer.team==scoringTeam && scorer.serverId){
+            console.log('scorerId: ',scorer.serverId);
+            axios({
+                method: 'post', url: 'https://footio.com.de/updatestats',
+                // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
+                // deployed
+                data: {
+                    serverId: scorer.serverId,
+                    points: 15,
+                }
+            });
+        }
+        if(assister && assister.team==scoringTeam && assister.serverId && assister.serverId!=scorer.serverId){
+            console.log('assister: ',assister.serverId);
+            axios({
+                method: 'post', url: 'https://footio.com.de/updatestats',
+                // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
+                // deployed
+                data: {
+                    serverId: assister.serverId,
+                    points: 10,
+                }
+            });
+        }
+    }catch(e){
+        console.log(e);
+    }
+}
+
 function ballspawn(where) {
     ball.id = null;
     ball.target = {
@@ -1310,7 +1366,7 @@ setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
 setInterval(updateCapacity, 1000 * c.roomUpdateFactor);
-setInterval(afkCheck, 60000); //change this to 1 minute
+setInterval(afkCheck, 60*60*1000); //change this to 1 minute
 // setInterval(bandwidthCheck, bandWidthIteration);
 
 // if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
