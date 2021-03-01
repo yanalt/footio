@@ -138,6 +138,15 @@ var C = SAT.Circle;
 
 app.use(express.static(__dirname + '/../client'));
 
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", '*');
+    res.header("Access-Control-Allow-Credentials", true);
+    res.header("Access-Control-Expose-Headers", "x-auth");
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header("Access-Control-Allow-Headers", 'Origin,x-auth,X-Requested-With,Content-Type,Accept,content-type');
+    next();
+});
+
 function updateCapacity() {
     return axios({
             method: 'post', url: 'https://footio.com.de/updateRooms',
@@ -225,7 +234,7 @@ function moveGoalkeeper() {
 
 function movePlayer(player) {
     if (player) {
-        if (player.sprint >= 950) 
+        if (player.sprint >= 960) 
             player.speed = maxSpeed*1.5;
         if (player.sprint > 0) 
             player.sprint--;
@@ -496,7 +505,6 @@ io
             speed: 0
         };
         socket.on('gotit', async function (player) {
-
             if (users.length >= c.maxPlayers) {
                 socket.emit('kick', 'Full server.');
                 socket.disconnect();
@@ -680,18 +688,15 @@ function kickBall(currentPlayer, power, direction) { //direction is for reverse 
 }
 
 function goalRestart(where) {
-    for (let i = 0; i < users.length; i++) {
-        var position = util.randomTeamPosition(7, users[i].team);
-        users[i].x = position.x;
-        users[i].y = position.y;
-        users[i].carrier = false;
-    }
-    if (teams[0].score == 10 || teams[1].score == 10) {
+    if (teams[0].score == 5 || teams[1].score == 5) {
         teams[0].score = 0;
         teams[1].score = 0;
-    }
+        setTimeout(()=>{
+            ballspawn(where);
+        },10*1000);
+    }else
+        ballspawn(where);
     balanceTeams();
-    ballspawn(where);
 }
 
 function tickPlayer(currentPlayer) {
@@ -1017,7 +1022,7 @@ function controlBots() {
 }
 
 function balanceBots() {
-    let botMax = 3;
+    let botMax = 6;
     if (users.length < botMax) {
 
         bot.hue = teams[0].player_amount > teams[1].player_amount
@@ -1317,6 +1322,12 @@ function sendGoalAndAssist(scoringTeam){
 }
 
 function ballspawn(where) {
+    for (let i = 0; i < users.length; i++) {
+        var position = util.randomTeamPosition(7, users[i].team);
+        users[i].x = position.x;
+        users[i].y = position.y;
+        users[i].carrier = false;
+    }
     ball.id = null;
     ball.target = {
         x: c.gameWidth / 2 + where,
@@ -1329,7 +1340,7 @@ function ballspawn(where) {
 
 function afkCheck() {
     for (var i = 0; i < users.length; i++) {
-        if (users[i].x == users[i].lastX && users[i].y == users[i].lastY) {
+        if (users[i].x == users[i].lastX || users[i].y == users[i].lastY) {
             if (sockets[users[i].socketId]) {
                 if(users[i].isAFK){
                     sockets[users[i].socketId].emit('kick', 'Inactivity.');
@@ -1366,7 +1377,7 @@ setInterval(gameloop, 1000);
 setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
 setInterval(updateCapacity, 1000 * c.roomUpdateFactor);
-setInterval(afkCheck, 60*60*1000); //change this to 1 minute
+setInterval(afkCheck, 60*1000); //change this to 1 minute
 // setInterval(bandwidthCheck, bandWidthIteration);
 
 // if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
