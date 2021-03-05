@@ -45,7 +45,7 @@ if(process.argv[4]){
     serverLocation = process.argv[4];
 }
 
-if (ipaddress == '0.0.0.0') {
+if (serverLocation != 'local') {
     options = {
         key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
         cert: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/fullchain.pem")
@@ -147,13 +147,22 @@ app.use(function (req, res, next) {
     next();
 });
 
+
+let url = '';
+if(serverLocation!='local')
+    url = 'https://footio.com.de';
+else
+    url = 'http://10.0.0.11:3000';
+
+let fixedAdress = ipaddress.replace('http','https');
+
 function updateCapacity() {
     return axios({
-            method: 'post', url: 'https://footio.com.de/updateRooms',
+            method: 'post', url : url + '/updateRooms',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
-                ip: ipaddress,
+                ip: fixedAdress,
                 port: serverport,
                 location: serverLocation,
                 difficulty,
@@ -456,7 +465,7 @@ async function confirmSkin(conf) {
     console.log(conf);
     try{
     return await axios({
-            method: 'post', url: 'https://footio.com.de/users/skinconfirm',
+            method: 'post', url: url + '/users/skinconfirm',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
@@ -1295,7 +1304,7 @@ function sendGoalAndAssist(scoringTeam){
         if(scorer && scorer.team==scoringTeam && scorer.serverId){
             console.log('scorerId: ',scorer.serverId);
             axios({
-                method: 'post', url: 'https://footio.com.de/updatestats',
+                method: 'post', url: url + '/updatestats',
                 // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
                 // deployed
                 data: {
@@ -1307,7 +1316,7 @@ function sendGoalAndAssist(scoringTeam){
         if(assister && assister.team==scoringTeam && assister.serverId && assister.serverId!=scorer.serverId){
             console.log('assister: ',assister.serverId);
             axios({
-                method: 'post', url: 'https://footio.com.de/updatestats',
+                method: 'post', url: url + '/updatestats',
                 // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
                 // deployed
                 data: {
@@ -1380,12 +1389,12 @@ setInterval(updateCapacity, 1000 * c.roomUpdateFactor);
 setInterval(afkCheck, 60*1000); //change this to 1 minute
 // setInterval(bandwidthCheck, bandWidthIteration);
 
-// if (ipaddress == 'www.footio.com.de' || ipaddress == 'localhost') {
+if (serverLocation == 'local') {
     http
         .listen(serverport, '0.0.0.0', function () {
             console.log('[DEBUG] Listening on ' + ipaddress + ':' + serverport);
         });
-// } else {
-//     console.log('Running on TLS');
-//     ServerTLS.listen(serverport);
-// }
+} else {
+    console.log('Running on TLS');
+    ServerTLS.listen(serverport);
+}
