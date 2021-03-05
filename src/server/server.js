@@ -459,9 +459,6 @@ function balanceTeams() {
 }
 
 async function confirmSkin(conf) {
-    if (ipaddress == '0.0.0.0') {
-        ipaddress = 'www.footio.com.de';
-    }
     console.log(conf);
     try{
     return await axios({
@@ -469,7 +466,7 @@ async function confirmSkin(conf) {
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
-                skin: conf
+                token: conf
             }
         });
        }catch(e) {
@@ -480,6 +477,7 @@ async function confirmSkin(conf) {
             };
         }
 }
+
 
 io
     .on('connection', function (socket) {
@@ -495,6 +493,7 @@ io
             id: -1,
             socketId: socket.id,
             skinsprite: 0,
+            ballsprite: 0,
             frame: 0,
             hue: 0,
             team: 0,
@@ -529,11 +528,15 @@ io
                 updateCapacity(serverport);
                 sockets[player.socketId] = socket;
                 if (response.data){ 
-                    player.skinsprite = response.data.skinsprite;
-                    player.serverId = response.data.userId;
+                    player.skinsprite = response.data.skinSprite;
+                    player.serverId = 0 || response.data.userId;
+                    player.ballsprite = 0 || response.data.ballSprite;
                 }
-                else 
+                else {
                     player.skinsprite = 0;
+                    player.ballsprite = 0;
+                }
+                
                 player.hue = teams[0].player_amount > teams[1].player_amount
                     ? 0
                     : 220;
@@ -720,6 +723,8 @@ function tickPlayer(currentPlayer) {
                 ball.id = currentPlayer.id;
                 ball.isLoose = false;
                 controllingTeam = currentPlayer.team;
+                if(currentPlayer.ballsprite&&ball.sprite!=currentPlayer.ballsprite)
+                    ball.sprite=currentPlayer.ballsprite;
             } else {
                 if (ball.speed < 4) {
                     currentPlayer.carrier = true;
@@ -1149,7 +1154,7 @@ function gameloop() {
                 sockets[u.socketId].emit('4', {
                     blue: teams[0].score,
                     red: teams[1].score
-                }, users);
+                }, users, ball.sprite);
             }
             if(u.screenWidth<1920){
                 u.screenWidth= 1920;
