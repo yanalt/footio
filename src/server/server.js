@@ -45,6 +45,10 @@ if(process.argv[4]){
     serverLocation = process.argv[4];
 }
 
+if(process.argv[5]){
+    c.maxPlayers = process.argv[5];
+}
+
 if (serverLocation != 'local') {
     options = {
         key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
@@ -166,7 +170,8 @@ function updateCapacity() {
                 port: serverport,
                 location: serverLocation,
                 difficulty,
-                playerAmount: users.length
+                playerAmount: users.length,
+                playerMax: c.maxPlayers
             }
         }).catch((e) => {
             console.log('failed response from updateRooms');
@@ -517,14 +522,17 @@ io
                 socket.emit('kick', 'Full server.');
                 socket.disconnect();
             } else if (util.findIndex(users, player.id) > -1) {
-                socket.disconnect();
-            } else if (!util.validNick(player.name) || util.slurNick(player.name)) {
-                socket.emit('kick', 'Invalid username.');
+                socket.emit('kick', 'Invalid user.');
                 socket.disconnect();
             } else {
                 let response = await confirmSkin(player.conf);
                 console.log('server data: ',response.data);
+
+
+                player.name=util.slurNick(player.name);
                 
+                console.log(player.name);
+
                 updateCapacity(serverport);
                 sockets[player.socketId] = socket;
                 if (response.data){ 
@@ -599,6 +607,7 @@ io
         socket.on('respawn', function () {
             if (util.findIndex(users, currentPlayer.id) > -1) 
                 users.splice(util.findIndex(users, currentPlayer.id), 1);
+            
             socket.emit('welcome', currentPlayer);
         });
 
@@ -1054,7 +1063,7 @@ function balanceBots() {
         users.push({
             id: bot.id,
             name: "BOT",
-            skinsprite: util.randomInRange(1, characterAmount) + "",
+            skinsprite: '40', // util.randomInRange(1, characterAmount) + "",
             isBot: true,
             command: -1,
             frame: 0,

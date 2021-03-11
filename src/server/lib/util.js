@@ -4,25 +4,77 @@
 
 var cfg = require('../../../config.json');
 
+function isAlphabetic(str){
+    str = str.toLowerCase();
+    let alphabet = 'abcdefghijklmnopqrstuvwxyz';
+    for (let i = 0; i < str.length; i++) {
+        let success = false;
+        for (let j = 0; j < alphabet.length; j++) {
+            if(str[i]== alphabet[j])
+                success = true;
+        }
+        if(!success)
+            return false;
+    }
+    return true;
+}
 
 exports.validNick = function (nickname) {
-    var regex = /^\w*$/;
-    return regex.exec(nickname) !== null;
+    // var regex = /^\w*$/;
+    // return regex.exec(nickname) !== null;
 };
 
+
 exports.slurNick = function (nickname) {
-    if(nickname==null)
-        return false;
-    var regex = RegExp("nigg");
-    if (nickname.search(regex) != -1)
-        return true;
-    regex = RegExp("niqq");
-    if (nickname.search(regex) != -1)
-        return true;
-    regex = RegExp("ni99");
-    if (nickname.search(regex) != -1)
-        return true;
-    return false;
+    if(!isAlphabetic(nickname))
+        return 'h4x0r';
+
+    let roodypoo = ['nig','niq','nlg','nlq']; 
+    let oyvey = ['kike','klke','hitler','h1tler'];
+    let speedy = ['spic','splc','wetback'];
+    let bbq =  ['tranny','trany','tranni','trani','tranl','trannl','troon'];
+    let bop = ['kill','rape','gas','genocide','burn'];
+    let ninja = ['chink','gook','nip','chlnk','nlp'];
+    let candyass = ['fag','phag','fgt','phgt'];
+    
+    nickname=nickname.toLowerCase();
+
+    for (let i = 0; i < roodypoo.length; i++) {
+        // console.log(roodypoo[i] + ' ' + nickname + ' ' + '/'+roodypoo[i]+'/i' + nickname.search(roodypoo[i]));
+        if(nickname.search(roodypoo[i])!=-1)
+            return 'roodypoo';
+    }
+    
+    for (let i = 0; i < candyass.length; i++) 
+        if(nickname.search(candyass[i])!=-1)
+            return 'candyass';
+
+    for (let i = 0; i < oyvey.length; i++) 
+        if(nickname.search(oyvey[i])!=-1)
+        return 'oyvey';
+    
+
+    for (let i = 0; i < speedy.length; i++) 
+        if(nickname.search(speedy[i])!=-1)
+            return 'speedy';
+    
+
+    for (let i = 0; i < bbq.length; i++) 
+        if(nickname.search(bbq[i])!=-1)
+            return 'bbq';
+    
+
+    for (let i = 0; i < bop.length; i++) 
+        if(nickname.search(bop[i])!=-1)
+            return 'bop';
+    
+
+    for (let i = 0; i < ninja.length; i++) 
+        if(nickname.search(ninja[i])!=-1)
+            return 'ninja';
+                    
+    return nickname;            
+        
 };
 
 // determine mass from radius of circle

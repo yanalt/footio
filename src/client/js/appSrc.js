@@ -13,6 +13,7 @@ var comIndex = 0;
 var characterSprites = [];
 var characterAmount = 999;
 var ballSprites = [];
+let currentBallSprite = 0;
 var disconnected = false;
 
 function prepCharacterSprites() {
@@ -29,9 +30,10 @@ function loadCharacterSprites(sprite) {
     }
 
 function loadBallSprites() {
-    for (i = 0; i <= 9; i++) {
+    for (i = 0; i <= 7; i++) {
         ballSprites[i] = new Image();
-        ballSprites[i].src = "/img/ball" + i + ".png";
+        ballSprites[i].src = "/img/ball_" + i + ".png";
+        console.log(ballSprites[i]);
     }
 }
 
@@ -185,7 +187,8 @@ var ball = {
     x: 0,
     y: 0,
     frame: 0,
-    speed: 1
+    speed: 1,
+    ballsprite: 0
 };
 
 var target = {
@@ -216,7 +219,7 @@ function setupSocket(socket) {
         .on('pongcheck', function () {
             var latency = Date.now() - global.startPingTime;
             // debug('Latency: ' + latency + 'ms');
-            console.log('Latency: ' + latency + 'ms');
+            // console.log('Latency: ' + latency + 'ms');
         });
 
     // Handle error.
@@ -290,7 +293,7 @@ function setupSocket(socket) {
 
     //slower socket for non-movement information
 
-    socket.on('4', function (serverScore, serverUsers) {
+    socket.on('4', function (serverScore, serverUsers, ballsprite) {
         if (serverScore) {
             score = serverScore;
         }
@@ -298,6 +301,9 @@ function setupSocket(socket) {
         usersExpanded.forEach(u => {
             loadCharacterSprites(u.skinsprite);
         });
+        console.log('new: ' +ballsprite + ' vs current: ' + currentBallSprite);
+        if(ballsprite && ballsprite != 0 && currentBallSprite != ballsprite)
+            currentBallSprite = ballsprite;
     });
 
     socket.on('kick', function (data) {
@@ -312,7 +318,7 @@ function setupSocket(socket) {
         // console.log(soundId);
         document
             .getElementById(soundId)
-            .volume = 0.2;
+            .volume = 0.1;
         document
             .getElementById(soundId)
             .play();
@@ -368,7 +374,11 @@ function drawBall(ball) {
     // console.log(ball.frame);
     if (!ball.frame) 
         ball.frame = 0;
-    graph.drawImage(ballSprites[(Math.floor(ball.frame / 10) % 10)], ballX - 15, ballY - 15, 30, 30);
+    let width = 124;
+    srcX = (Math.floor(ball.frame / 10) % 10) *  width;
+    srcY = 0;
+    
+    graph.drawImage(ballSprites[currentBallSprite],srcX,srcY,  124, 126,ballX - 15, ballY - 15,  30, 30);
 }
 
 function drawGoalkeeper(goalkeepers) {
@@ -633,8 +643,6 @@ function drawPlayers() {
         graph.font = 'bold ' + Math.max(fontSize / 3 * 2, 10) + 'px sans-serif';
         if (nameCell.length === 0) 
             fontSize = 0;
-        graph.strokeText(Math.round(30), circle.x, circle.y + fontSize);
-        graph.fillText(Math.round(30), circle.x, circle.y + fontSize);
 
         var srcX;
         var srcY;

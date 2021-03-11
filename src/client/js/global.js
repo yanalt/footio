@@ -21,7 +21,7 @@ module.exports = {
     disconnected: false,
     kicked: false,
     startPingTime: 0,
-    backgroundColor: '#7EC850',
+    backgroundColor: '#5CA630',
     lineColor: '#000000',
     buttonAlignment: 'right',
     usingMobileVersion: true,
