@@ -1,8 +1,8 @@
-// bug: two bots get stuck on each other with the ball
-
 var io = require('socket.io-client');
 var Canvas = require('./canvas');
 var global = require('./global');
+
+
 
 //var playerNameInput = document.getElementById('playerNameInput');
 var socket;
@@ -217,9 +217,8 @@ function setupSocket(socket) {
     // Handle ping.
     socket
         .on('pongcheck', function () {
-            var latency = Date.now() - global.startPingTime;
-            // debug('Latency: ' + latency + 'ms');
-            // console.log('Latency: ' + latency + 'ms');
+            let latency = Date.now() - global.startPingTime;
+            console.log('Latency: ' + latency + 'ms');
         });
 
     // Handle error.
@@ -301,7 +300,6 @@ function setupSocket(socket) {
         usersExpanded.forEach(u => {
             loadCharacterSprites(u.skinsprite);
         });
-        console.log('new: ' +ballsprite + ' vs current: ' + currentBallSprite);
         if(ballsprite && ballsprite != 0 && currentBallSprite != ballsprite)
             currentBallSprite = ballsprite;
     });
@@ -318,7 +316,7 @@ function setupSocket(socket) {
         // console.log(soundId);
         document
             .getElementById(soundId)
-            .volume = 0.1;
+            .volume = 0.01;
         document
             .getElementById(soundId)
             .play();
@@ -613,22 +611,19 @@ function drawPlayers() {
         if (cellCurrent.emoji != -1) {
             switch (cellCurrent.emoji) {
                 case 0:
-                    emojiStr = "😠";
+                    emojiStr = "😁";
                     break;
                 case 1:
-                    emojiStr = "🤔";
+                    emojiStr = "😠";
                     break;
                 case 2:
-                    emojiStr = "☝";
-                    break;
-                case 3:
-                    emojiStr = "😂";
-                    break;
-                case 4:
                     emojiStr = "💩";
                     break;
-                case 5:
-                    emojiStr = "😁";
+                case 3:
+                    emojiStr = "😜";
+                    break;
+                case 4:
+                    emojiStr = "👋";
                     break;
             }
             //graph.strokeText(emojiStr, circle.x - 20, circle.y - 130);
@@ -660,9 +655,9 @@ function drawPlayers() {
         srcY = Math.floor(userCurrent.frame / 12) * height;
 
         if (cellCurrent.skinsprite != null && cellCurrent.skinsprite != "") 
-            graph.drawImage(characterSprites[cellCurrent.skinsprite], srcX, srcY, width, height, circle.x - 60, circle.y - 190, width, height);
+            graph.drawImage(characterSprites[cellCurrent.skinsprite], srcX, srcY, width, height, circle.x - 60, circle.y - 160, width, height);
         else 
-            graph.drawImage(characterSprites[0], srcX, srcY, width, height, circle.x - 60, circle.y - 170, width, height);
+            graph.drawImage(characterSprites[0], srcX, srcY, width, height, circle.x - 60, circle.y - 160, width, height);
 
             // var character = new Image(); if (cellCurrent.skinsprite != null &&
             // cellCurrent.skinsprite != "")     character.src = "/img/" +
@@ -1006,4 +1001,4 @@ function comIndexNext() { // rolls commercial signs
 }
 
 setInterval(comIndexNext, 30000);
-setInterval(pingCheck, 1000 / 24);
+setInterval(pingCheck, 3000);

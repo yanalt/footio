@@ -24,6 +24,7 @@ const https = require("https"),
 var options = {};
 var ServerTLS = {};
 var io = {};
+let botMax = 0;
 let difficulty = 'hard';
 let maxSpeed = 5.25;
 let serverLocation = 'unknown';
@@ -51,8 +52,8 @@ if(process.argv[5]){
 
 if (serverLocation != 'local') {
     options = {
-        key: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/privkey.pem"),
-        cert: fs.readFileSync("/etc/letsencrypt/live/footio.com.de/fullchain.pem")
+        key: fs.readFileSync("/etc/letsencrypt/live/"+ipaddress+"/privkey.pem"),
+        cert: fs.readFileSync("/etc/letsencrypt/live/"+ipaddress+"/fullchain.pem")
     };
     ServerTLS = https.createServer(options, app);
     io = require('socket.io')(ServerTLS);
@@ -158,7 +159,7 @@ if(serverLocation!='local')
 else
     url = 'http://10.0.0.11:3000';
 
-let fixedAdress = ipaddress.replace('http','https');
+// let fixedAdress = ipaddress.replace('http','https');
 
 function updateCapacity() {
     return axios({
@@ -166,7 +167,7 @@ function updateCapacity() {
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
             // deployed
             data: {
-                ip: fixedAdress,
+                ip: ipaddress,
                 port: serverport,
                 location: serverLocation,
                 difficulty,
@@ -276,11 +277,11 @@ function movePlayer(player) {
             deltaX *= dist / (50 + c.playerRadius);
         }
         if (!isNaN(deltaY)) {
-            player.lastY = player.y;
+            player.lastY = player.target.y;
             player.y += deltaY;
         }
         if (!isNaN(deltaX)) {
-            player.lastX = player.x;
+            player.lastX = player.target.x;
             player.x += deltaX;
         }
 
@@ -468,8 +469,6 @@ async function confirmSkin(conf) {
     try{
     return await axios({
             method: 'post', url: url + '/users/skinconfirm',
-            // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
-            // deployed
             data: {
                 token: conf
             }
@@ -797,7 +796,7 @@ function tickPlayer(currentPlayer) {
 }
 
 function moveloop() {
-    if (users.length < 20) {
+    if (users.length <= botMax) {
         controlBots();
     }
     moveGoalkeeper();
@@ -843,7 +842,7 @@ function checkAssist(team) {
     };
     users.forEach(u => {
         if (!u.carrier) {
-            if (u.team == team && util.getRealDistance(u, goalkeepers[1 - u.team].position) < c.gameWidth / 5) {
+            if (u.team == team && util.getRealDistance(u, goalkeepers[1 - u.team].position) < c.gameWidth / 2) {
                 let friendDistanceFromKeeper = util.getRealDistance(u, goalkeepers[1 - u.team].position);
                 if (friendDistanceFromKeeper > bestFriendDistanceFromKeeper) {
                     bestFriendPos.x = u.x;
@@ -863,6 +862,50 @@ function checkAssist(team) {
         return false;
     }
 }
+
+function checkPassLoop(){
+    let shouldPass = null;
+    let currentBot = null;
+    users.forEach(me => {
+        if(me.carrier && me.isBot){
+            users.forEach(u => {
+                let closestFriend = null;
+                let friendDistance = null;
+                let opponentDistanceFromGoal = Math.abs(u.x - c.gameWidth*u.team);
+                let myDistanceFromGoal = Math.abs(me.x - c.gameWidth*u.team);
+
+                if (me.carrier && u.team != me.team && myDistanceFromGoal>opponentDistanceFromGoal && util.getRealDistance(u, me)<c.gameWidth / 35) {
+                    let closestFriendDistance = c.gameWidth;
+                    users.forEach(v =>{
+                        if(!v.carrier && v.team == me.team) {
+                            if(closestFriend == null)
+                                closestFriend = v;
+                            
+                            friendDistance = util.getRealDistance(v, me);
+        
+                            if(friendDistance < closestFriendDistance){
+                                closestFriend = v;
+                                closestFriendDistance = friendDistance;
+                            }
+                        }
+                    });
+                    currentBot = me;
+                    shouldPass = closestFriend;
+                    return;
+                }
+            });
+        }
+    });
+
+    if(shouldPass){
+        currentBot.target.x = shouldPass.x - currentBot.x;
+        currentBot.target.y = shouldPass.y - currentBot.y;
+        kickBall(currentBot,3,1);
+        currentBot.command -= 2;
+    }else{
+    }
+}
+
 
 var bot = {
     id: -1,
@@ -888,9 +931,14 @@ var bot = {
     speed: 0
 };
 
-// bot commands: -1 - stand still 0 - go to random position in blue side 1 - go
-// to random position in red side 2 - run towards blue goal 3 - run towards red
-// goal 4 - shoot 5 - chase ball 6 - gather a loose ball
+// bot commands: -1 - stand still
+// 0 - go to random position in blue side
+// 1 - go to random position in red side
+// 2 - run towards blue goal
+// 3 - run towards red goal
+// 4 - shoot
+// 5 - chase ball
+// 6 - gather a loose ball
 
 function controlBots() {
     // we need to know which team controls the ball when a teammate holds the ball,
@@ -977,14 +1025,16 @@ function controlBots() {
                 case 2:
                     commandString = "go left goal!";
                     ambitionX = 0 - users[i].x;
-                    ambitionY = c.gameHeight / 2 - users[i].y;
+                    // ambitionY = c.gameHeight / 2 - users[i].y;
+                    ambitionY = users[i].absTarget.y - users[i].y;
                     // users[i].target.x = 0 - users[i].x; users[i].target.y = c.gameHeight / 2 -
                     // users[i].y;
                     break;
                 case 3:
                     commandString = "go right goal!";
                     ambitionX = c.gameWidth - users[i].x;
-                    ambitionY = c.gameHeight / 2 - users[i].y;
+                    // ambitionY = c.gameHeight / 2 - users[i].y;
+                    ambitionY = users[i].absTarget.y - users[i].y;
                     // users[i].target.x = c.gameWidth - users[i].x; users[i].target.y =
                     // c.gameHeight / 2 - users[i].y;
                     break;
@@ -1045,7 +1095,6 @@ function controlBots() {
 }
 
 function balanceBots() {
-    let botMax = 6;
     if (users.length < botMax) {
 
         bot.hue = teams[0].player_amount > teams[1].player_amount
@@ -1331,8 +1380,6 @@ function sendGoalAndAssist(scoringTeam){
             console.log('assister: ',assister.serverId);
             axios({
                 method: 'post', url: url + '/updatestats',
-                // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
-                // deployed
                 data: {
                     serverId: assister.serverId,
                     points: 10,
@@ -1363,7 +1410,7 @@ function ballspawn(where) {
 
 function afkCheck() {
     for (var i = 0; i < users.length; i++) {
-        if (users[i].x == users[i].lastX || users[i].y == users[i].lastY) {
+        if (users[i].target.x == users[i].lastX && users[i].target.y == users[i].lastY) {
             if (sockets[users[i].socketId]) {
                 if(users[i].isAFK){
                     sockets[users[i].socketId].emit('kick', 'Inactivity.');
@@ -1401,6 +1448,7 @@ setInterval(sendUpdates, 1000 / c.networkUpdateFactor);
 setInterval(resetEmoji, 3000);
 setInterval(updateCapacity, 1000 * c.roomUpdateFactor);
 setInterval(afkCheck, 60*1000); //change this to 1 minute
+setInterval(checkPassLoop, 1000 / 4);
 // setInterval(bandwidthCheck, bandWidthIteration);
 
 if (serverLocation == 'local') {

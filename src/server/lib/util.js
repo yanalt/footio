@@ -37,40 +37,40 @@ exports.slurNick = function (nickname) {
     let ninja = ['chink','gook','nip','chlnk','nlp'];
     let candyass = ['fag','phag','fgt','phgt'];
     
-    nickname=nickname.toLowerCase();
+    let loweredNickname=nickname.toLowerCase();
 
     for (let i = 0; i < roodypoo.length; i++) {
         // console.log(roodypoo[i] + ' ' + nickname + ' ' + '/'+roodypoo[i]+'/i' + nickname.search(roodypoo[i]));
-        if(nickname.search(roodypoo[i])!=-1)
+        if(loweredNickname.search(roodypoo[i])!=-1)
             return 'roodypoo';
     }
     
     for (let i = 0; i < candyass.length; i++) 
-        if(nickname.search(candyass[i])!=-1)
+        if(loweredNickname.search(candyass[i])!=-1)
             return 'candyass';
 
     for (let i = 0; i < oyvey.length; i++) 
-        if(nickname.search(oyvey[i])!=-1)
-        return 'oyvey';
+        if(loweredNickname.search(oyvey[i])!=-1)
+            return 'oyvey';
     
 
     for (let i = 0; i < speedy.length; i++) 
-        if(nickname.search(speedy[i])!=-1)
+        if(loweredNickname.search(speedy[i])!=-1)
             return 'speedy';
     
 
     for (let i = 0; i < bbq.length; i++) 
-        if(nickname.search(bbq[i])!=-1)
+        if(loweredNickname.search(bbq[i])!=-1)
             return 'bbq';
     
 
     for (let i = 0; i < bop.length; i++) 
-        if(nickname.search(bop[i])!=-1)
+        if(loweredNickname.search(bop[i])!=-1)
             return 'bop';
     
 
     for (let i = 0; i < ninja.length; i++) 
-        if(nickname.search(ninja[i])!=-1)
+        if(loweredNickname.search(ninja[i])!=-1)
             return 'ninja';
                     
     return nickname;            
