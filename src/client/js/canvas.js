@@ -49,7 +49,18 @@ class Canvas {
 
     mouseDown(event) {
         if (event.button == 0) {
-            this.parent.socket.emit('sprint');
+            if(event.clientX < global.screenWidth/2 + global.overlayAdWidth/2 && 
+               event.clientX > global.screenWidth/2 - global.overlayAdWidth/2 &&  
+               event.clientY < global.overlayAdHeight &&  
+               event.clientY > 0){
+                console.log('activate url! ' + global.adIndex);
+                if(global.adIndex == 1)
+                    window.location = 'https://play.google.com/store/apps/details?id=com.timsa7.mundmobile';
+                if(global.adIndex == 2)
+                    window.location = 'https://apps.apple.com/us/app/footio/id1556001662';
+            } else {
+                this.parent.socket.emit('sprint');
+            }
         } else if (event.button == 2) {
             if (this.parent.powerTime == 0)
                 this.parent.powerTime = new Date().getTime();
@@ -271,7 +282,7 @@ class Canvas {
             //console.log(key-49);
             this.parent.socket.emit('5', key - 49);
         } else if (event.key === 'r') {
-            setInterval(this.parent.benchmark, 100);
+            // setInterval(this.parent.benchmark, 100);
         }
     }
 }

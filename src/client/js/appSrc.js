@@ -1,23 +1,25 @@
-var io = require('socket.io-client');
-var Canvas = require('./canvas');
-var global = require('./global');
+let io = require('socket.io-client');
+let Canvas = require('./canvas');
+let global = require('./global');
 
 
 
-//var playerNameInput = document.getElementById('playerNameInput');
-var socket;
-var reason;
-var currentFrame = 0;
-var comArr = [];
-var comIndex = 0;
-var characterSprites = [];
-var characterAmount = 999;
-var ballSprites = [];
+//let playerNameInput = document.getElementById('playerNameInput');
+let socket;
+let reason;
+let currentFrame = 0;
+let comArr = [];
+let adArr = [];
+let comIndex = 0;
+let adIndex = 0;
+let characterSprites = [];
+let characterAmount = 999;
+let ballSprites = [];
 let currentBallSprite = 0;
-var disconnected = false;
+let disconnected = false;
 
 function prepCharacterSprites() {
-    for (i = 0; i <= characterAmount; i++) {
+    for (let i = 0; i <= characterAmount; i++) {
         characterSprites[i] = new Image();
     }
 }
@@ -30,14 +32,13 @@ function loadCharacterSprites(sprite) {
     }
 
 function loadBallSprites() {
-    for (i = 0; i <= 7; i++) {
+    for (let i = 0; i <= 7; i++) {
         ballSprites[i] = new Image();
         ballSprites[i].src = "/img/ball_" + i + ".png";
-        console.log(ballSprites[i]);
     }
 }
 
-var debug = function (args) {
+let debug = function (args) {
     if (console && console.log) {
         console.log(args);
     }
@@ -49,15 +50,19 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
     global.usingMobileVersion = false;
 }
 
-function initCommercialImages(count) {
-    for (var i = 0; i < count; i++) {
+function initCommercialImages() {
+    for (let i = 0; i < global.commercialCount; i++) {
+        comArr[i] = new Image();
+        comArr[i].src = "/img/commercials/" + i + ".png";
+    }
+    for (let i = 8; i < 8+ global.adCount; i++) {
         comArr[i] = new Image();
         comArr[i].src = "/img/commercials/" + i + ".png";
     }
 }
 
 function emojiAlignment(resizing) {
-    var element;
+    let element;
     if (global.usingMobileVersion && !resizing) {
         element = document.getElementById('poopyNum');
         element
@@ -100,15 +105,15 @@ function emojiAlignment(resizing) {
 function startGame() {
     prepCharacterSprites();
     loadBallSprites();
-    initCommercialImages(global.commercialCount);
+    initCommercialImages();
     //window.alert(window.innerWidth+"x"+window.innerHeight);
     global.playerName = "";
     //global.playerType = type;
     global.screenWidth = window.innerWidth;
     global.screenHeight = window.innerHeight;
     if (window.innerWidth <= 1024) {
-        var viewport = document.querySelector("meta[name=viewport]");
-        var iscale = global.screenWidth / 1024;
+        let viewport = document.querySelector("meta[name=viewport]");
+        let iscale = global.screenWidth / 1024;
         window.canvas.cv.width = 1024;
         //window.alert(window.canvas.cv.width);
         viewport.setAttribute('content', 'width=device-width, initial-scale=' + iscale + ', maximum-scale=1.0, user-scalable=0');
@@ -138,7 +143,7 @@ window.onload = function () {
     startGame();
 };
 
-var playerConfig = {
+let playerConfig = {
     border: 6,
     textColor: '#FFFFFF',
     textBorder: '#000000',
@@ -146,7 +151,7 @@ var playerConfig = {
     defaultSize: 30
 };
 
-var player = {
+let player = {
     id: -1,
     screenWidth: global.screenWidth,
     screenHeight: global.screenHeight,
@@ -157,7 +162,7 @@ var player = {
 };
 global.player = player;
 
-var goalkeepers = [];
+let goalkeepers = [];
 goalkeepers[0] = {
     position: {
         x: 0,
@@ -170,14 +175,14 @@ goalkeepers[1] = {
         y: 0
     }
 };
-var users = [];
-var score = {
+let users = [];
+let score = {
     blue: 0,
     red: 0
 };
 
-var usersExpanded = [];
-var ball = {
+let usersExpanded = [];
+let ball = {
 
     id: null,
     target: {
@@ -191,7 +196,7 @@ var ball = {
     ballsprite: 0
 };
 
-var target = {
+let target = {
     x: global.screenWidth / 2,
     y: global.screenHeight / 2
 };
@@ -199,8 +204,8 @@ global.target = target;
 
 window.canvas = new Canvas();
 
-var c = window.canvas.cv;
-var graph = c.getContext('2d');
+let c = window.canvas.cv;
+let graph = c.getContext('2d');
 
 $('body').on('contextmenu', '#cvs', function (e) {
     return false;
@@ -239,7 +244,7 @@ function setupSocket(socket) {
         player.screenWidth = global.screenWidth;
         player.screenHeight = global.screenHeight;
         player.target = window.canvas.target;
-        var searchParams = new URLSearchParams(window.location.search);
+        let searchParams = new URLSearchParams(window.location.search);
         if (searchParams != null && searchParams != undefined && searchParams != "undefined" && searchParams != "") {
             player.conf = searchParams.get('conf');
             player.name = searchParams.get('name');
@@ -266,8 +271,8 @@ function setupSocket(socket) {
 
     // Handle movement.
     socket.on('3', function (userData, serverBall, serverGoalkeepers) {
-        var playerData;
-        for (var i = 0; i < userData.length; i++) {
+        let playerData;
+        for (let i = 0; i < userData.length; i++) {
             if (typeof(userData[i].id) == "undefined") {
                 playerData = userData[i];
                 i = userData.length;
@@ -312,7 +317,7 @@ function setupSocket(socket) {
     });
 
     socket.on('goal', function (data) {
-        var soundId = "goal" + (Math.floor(Math.random() * (4 - 1)) + 1);
+        let soundId = "goal" + (Math.floor(Math.random() * (4 - 1)) + 1);
         // console.log(soundId);
         document
             .getElementById(soundId)
@@ -325,13 +330,13 @@ function setupSocket(socket) {
 }
 
 function drawCircle(centerX, centerY, radius, sides) {
-    var theta = 0;
-    var x = 0;
-    var y = 0;
+    let theta = 0;
+    let x = 0;
+    let y = 0;
 
     graph.beginPath();
 
-    for (var i = 0; i < sides; i++) {
+    for (let i = 0; i < sides; i++) {
         theta = (i / sides) * 2 * Math.PI;
         x = centerX + radius * Math.sin(theta);
         y = centerY + radius * Math.cos(theta);
@@ -343,19 +348,45 @@ function drawCircle(centerX, centerY, radius, sides) {
     graph.fill();
 }
 
-function drawCommercials(index) {
-    var comDiv = 8;
-    var comHeight = 70;
-    for (var i = 0; i < comDiv; i++) {
-        var x = global.screenWidth / 2 - player.x + i * global.gameWidth / comDiv;
-        var y = global.screenHeight / 2 - player.y - comHeight;
-        graph.drawImage(comArr[index + i % 2], x, y, global.gameWidth / comDiv, comHeight);
-    }
+function drawCommercials() {
+    try{
+        let comDiv = 8;
+        let comHeight = 70;
+        for (let i = 0; i < comDiv; i++) {
+            let x = global.screenWidth / 2 - player.x + i * global.gameWidth / comDiv;
+            let y = global.screenHeight / 2 - player.y - comHeight;
+            graph.drawImage(comArr[comIndex + i % 2], x, y, global.gameWidth / comDiv, comHeight);
+        }
 
-    for (i = 0; i < comDiv; i++) {
-        var a = global.screenWidth / 2 - player.x + i * global.gameWidth / comDiv;
-        var b = global.gameHeight + global.screenHeight / 2 - player.y;
-        graph.drawImage(comArr[index + i % 2], a, b, global.gameWidth / comDiv, comHeight);
+        for (let i = 0; i < comDiv; i++) {
+            let a = global.screenWidth / 2 - player.x + i * global.gameWidth / comDiv;
+            let b = global.gameHeight + global.screenHeight / 2 - player.y;
+            graph.drawImage(comArr[comIndex + i % 2], a, b, global.gameWidth / comDiv, comHeight);
+        }
+    } catch(e) {
+        console.log(comIndex);
+        console.log(e);
+    }
+}
+
+function drawOverlayAdForMobile(){
+    try{
+        let width = global.screenWidth/3;
+        let height = width/3.75;
+
+        if(width > 600){
+            width = 600;
+            height = 160;
+        }
+
+        if(global.overlayAdWidth == 0){
+            global.overlayAdWidth = width;
+            global.overlayAdHeight = height;
+        }
+
+        graph.drawImage(comArr[8 + adIndex], global.screenWidth/2 - width/2, 0, width, height);
+    } catch(e) {
+        console.log(e);
     }
 }
 
@@ -364,10 +395,10 @@ function drawBall(ball) {
     graph.fillStyle = 'hsl(120, 0%, 75%)';
     graph.lineWidth = playerConfig.border + 10;
     drawCircle(ball.x - player.x + global.screenWidth / 2, ball.y - player.y + global.screenHeight / 2, 10 - 5, 18 + (~~ (10 / 5)));
-    // var character = new Image(); character.src = "/img/ball" +
+    // let character = new Image(); character.src = "/img/ball" +
     // (Math.floor(ball.frame / 10) % 10) + ".png";
-    var ballX = ball.x - player.x + global.screenWidth / 2;
-    var ballY = ball.y - player.y + global.screenHeight / 2;
+    let ballX = ball.x - player.x + global.screenWidth / 2;
+    let ballY = ball.y - player.y + global.screenHeight / 2;
     // graph.drawImage(character, ballX - 15, ballY - 15, 30, 30);
     // console.log(ball.frame);
     if (!ball.frame) 
@@ -382,10 +413,10 @@ function drawBall(ball) {
 function drawGoalkeeper(goalkeepers) {
     // graph.strokeStyle = 'hsl(220, 40%, 45%)'; graph.fillStyle = 'hsl(220, 40%,
     // 50%)'; graph.lineWidth = playerConfig.border + 10;
-    var fontSize = 80;
-    // var handDist = 0;
-    var x = goalkeepers[0].position.x - player.x + global.screenWidth / 2;
-    var y = goalkeepers[0].position.y - player.y + global.screenHeight / 2;
+    let fontSize = 80;
+    // let handDist = 0;
+    let x = goalkeepers[0].position.x - player.x + global.screenWidth / 2;
+    let y = goalkeepers[0].position.y - player.y + global.screenHeight / 2;
     // drawCircle(x, y, global.goalkeeperRadius, 18);
 
     graph.fillStyle = playerConfig.textColor;
@@ -421,9 +452,9 @@ function drawGoalDirection(team) {
     graph.textAlign = 'center';
     graph.textBaseline = 'middle';
     graph.font = 'bold ' + 14 + 'px arial';
-    var distance;
-    var emojiDeltaX;
-    var emojiDeltaY;
+    let distance;
+    let emojiDeltaX;
+    let emojiDeltaY;
     if (team == 1) {
         distance = Math.sqrt(Math.pow(player.x, 2) + Math.pow((player.y - global.screenHeight / 2), 2)); //only towards left
         emojiDeltaX = (0 - player.x * 60) / distance;
@@ -448,7 +479,7 @@ function drawBallDirection() {
     if (player.x >= ball.x - 10 && player.x <= ball.x + 10 && player.y >= ball.y - 10 && player.y <= ball.y + 10) {
         return;
     } else {
-        var distance = Math.sqrt(Math.pow(ball.x - player.x, 2) + Math.pow(ball.y - player.y, 2)); //only towards left
+        let distance = Math.sqrt(Math.pow(ball.x - player.x, 2) + Math.pow(ball.y - player.y, 2)); //only towards left
         graph.lineWidth = playerConfig.textBorderSize;
         graph.fillStyle = 'Black';
         graph.strokeStyle = playerConfig.textBorder;
@@ -476,7 +507,7 @@ function drawScore(score) {
 
 function drawButton() {
 
-    var buttonSize = window.canvas.cv.width / 12;
+    let buttonSize = window.canvas.cv.width / 12;
 
     graph.strokeStyle = 'hsl(280, 100%, 45%, 0)';
     graph.fillStyle = 'hsla(280, 0%, 50%, 0.4)';
@@ -486,7 +517,7 @@ function drawButton() {
     // buttonSize, 50);
     drawCircle(global.screenWidth - 3 * buttonSize - 10, global.screenHeight - buttonSize, buttonSize, 50);
     drawCircle(buttonSize, global.screenHeight - buttonSize, buttonSize, 50);
-    var fontSize = Math.max(40 / 3, 12);
+    let fontSize = Math.max(40 / 3, 12);
     graph.lineWidth = playerConfig.textBorderSize;
     graph.fillStyle = playerConfig.textColor;
     graph.strokeStyle = playerConfig.textBorder;
@@ -515,17 +546,17 @@ function drawButton() {
 
 function drawPlayers() {
     // console.log(c);
-    var start = {
+    let start = {
         x: player.x - (global.screenWidth / 2),
         y: player.y - (global.screenHeight / 2)
     };
-    for (var z = 0; z < users.length; z++) {
-        var userCurrent = users[z];
+    for (let z = 0; z < users.length; z++) {
+        let userCurrent = users[z];
         //console.log(userCurrent.frame);
-        var x = 0;
-        var y = 0;
-        var cellCurrent = userCurrent;
-        for (var i = 0; i < usersExpanded.length; i++) {
+        let x = 0;
+        let y = 0;
+        let cellCurrent = userCurrent;
+        for (let i = 0; i < usersExpanded.length; i++) {
             if (usersExpanded[i].id == userCurrent.id || usersExpanded[i].id == userCurrent.idz) {
                 // console.log(usersExpanded[i]);
                 cellCurrent = usersExpanded[i];
@@ -535,8 +566,8 @@ function drawPlayers() {
         if (player.x == userCurrent.x && player.y == userCurrent.y) 
             drawGoalDirection(cellCurrent.team);
         
-        var points = 30 + ~~ (30 / 5);
-        var increase = Math.PI * 2 / points;
+        let points = 30 + ~~ (30 / 5);
+        let increase = Math.PI * 2 / points;
         if (cellCurrent.hue != undefined) {
             graph.strokeStyle = 'hsl(' + cellCurrent.hue + ', 40%, 45%)';
             graph.fillStyle = 'hsl(' + cellCurrent.hue + ', 40%, 50%)';
@@ -546,17 +577,17 @@ function drawPlayers() {
         }
         graph.lineWidth = playerConfig.border;
 
-        var xstore = [];
-        var ystore = [];
+        let xstore = [];
+        let ystore = [];
 
         global.spin += 0.0;
 
-        var circle = {
+        let circle = {
             x: userCurrent.x - start.x,
             y: userCurrent.y - start.y
         };
 
-        for (i = 0; i < points; i++) {
+        for (let i = 0; i < points; i++) {
 
             x = 28 * Math.cos(global.spin) + circle.x;
             y = 28 * Math.sin(global.spin) + circle.y;
@@ -571,7 +602,7 @@ function drawPlayers() {
             xstore[i] = x;
             ystore[i] = y;
         }
-        for (i = 0; i < points; ++i) {
+        for (let i = 0; i < points; ++i) {
             if (i === 0) {
                 graph.beginPath();
                 graph.moveTo(xstore[i], ystore[i]);
@@ -587,7 +618,7 @@ function drawPlayers() {
         graph.lineCap = 'round';
         //graph.fill();
         graph.stroke();
-        var nameCell = "";
+        let nameCell = "";
 
         if (cellCurrent.name != undefined && cellCurrent.name != null) {
             nameCell = cellCurrent.name;
@@ -598,7 +629,7 @@ function drawPlayers() {
             nameCell = "";
         }
         // nameCell = cellCurrent.id;
-        var fontSize = 24;
+        let fontSize = 24;
         graph.lineWidth = playerConfig.textBorderSize;
         graph.fillStyle = 'Black';
         graph.strokeStyle = playerConfig.textBorder;
@@ -607,7 +638,7 @@ function drawPlayers() {
         graph.textAlign = 'center';
         graph.textBaseline = 'middle';
         graph.font = 'bold ' + fontSize + 'px arial';
-        var emojiStr = "";
+        let emojiStr = "";
         if (cellCurrent.emoji != -1) {
             switch (cellCurrent.emoji) {
                 case 0:
@@ -639,17 +670,17 @@ function drawPlayers() {
         if (nameCell.length === 0) 
             fontSize = 0;
 
-        var srcX;
-        var srcY;
+        let srcX;
+        let srcY;
 
-        var sheetWidth = 1440;
-        var sheetHeight = 1600;
+        let sheetWidth = 1440;
+        let sheetHeight = 1600;
 
-        var cols = 12;
-        var rows = 8;
+        let cols = 12;
+        let rows = 8;
 
-        var width = sheetWidth / cols;
-        var height = sheetHeight / rows;
+        let width = sheetWidth / cols;
+        let height = sheetHeight / rows;
 
         srcX = (userCurrent.frame % 12) * width;
         srcY = Math.floor(userCurrent.frame / 12) * height;
@@ -659,7 +690,7 @@ function drawPlayers() {
         else 
             graph.drawImage(characterSprites[0], srcX, srcY, width, height, circle.x - 60, circle.y - 160, width, height);
 
-            // var character = new Image(); if (cellCurrent.skinsprite != null &&
+            // let character = new Image(); if (cellCurrent.skinsprite != null &&
             // cellCurrent.skinsprite != "")     character.src = "/img/" +
             // cellCurrent.skinsprite + ".png"; else     character.src = "/img/0.png";
             // graph.drawImage(character, srcX, srcY, width, height, circle.x - 60, circle.y
@@ -758,14 +789,14 @@ function drawGoalText(ball) {
         graph.textAlign = 'center';
         graph.textBaseline = 'middle';
         graph.font = 'bold ' + 72 + 'px sans-serif';
-        var scoringTeam = "";
+        let scoringTeam = "";
         if (ball.x < 0) 
             scoringTeam = "RED";
         else 
             scoringTeam = "BLUE";
         graph.strokeText('GOAL! ' + scoringTeam + ' SCORED!', global.screenWidth / 2, global.screenHeight / 2);
         graph.fillText('GOAL! ' + scoringTeam + ' SCORED!', global.screenWidth / 2, global.screenHeight / 2);
-        var winners = "";
+        let winners = "";
         if (score.blue == 10) 
             winners = 'BLUE';
         if (score.red == 10) 
@@ -886,7 +917,7 @@ function gameLoop() {
             graph.fillStyle = global.backgroundColor;
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
 
-            drawCommercials(comIndex);
+            drawCommercials();
             drawborder();
             drawgoals();
             drawBallDirection();
@@ -897,6 +928,8 @@ function gameLoop() {
             drawBall(ball);
             if (global.usingMobileVersion) 
                 drawButton();
+
+            drawOverlayAdForMobile();
             
             socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
 
@@ -977,8 +1010,8 @@ function resize() {
         ratio = window.devicePixelRatio || 1;
     let minHeight = minWidth / ratio;
 
-    var w = screen.width * ratio;
-    var h = screen.height * ratio;
+    let w = screen.width * ratio;
+    let h = screen.height * ratio;
 
     // if (window.innerWidth < minWidth || window.innerHeight < minHeight) {
     // player.screenWidth = c.width = global.screenWidth = w; player.screenHeight =
@@ -998,7 +1031,10 @@ function resize() {
 function comIndexNext() { // rolls commercial signs
     comIndex += 2;
     comIndex = comIndex % global.commercialCount;
+    adIndex++;
+    adIndex=adIndex%global.adCount;
+    global.adIndex = adIndex;
 }
 
-setInterval(comIndexNext, 30000);
-setInterval(pingCheck, 3000);
+setInterval(comIndexNext, 30 * 1000);
+setInterval(pingCheck, 10 * 1000);

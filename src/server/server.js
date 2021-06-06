@@ -24,7 +24,8 @@ const https = require("https"),
 var options = {};
 var ServerTLS = {};
 var io = {};
-let botMax = 0;
+let botMax = 6;
+let botAmount = 0;
 let difficulty = 'hard';
 let maxSpeed = 5.25;
 let serverLocation = 'unknown';
@@ -162,6 +163,8 @@ else
 // let fixedAdress = ipaddress.replace('http','https');
 
 function updateCapacity() {
+    let humanUsers = users.length - botAmount;
+
     return axios({
             method: 'post', url : url + '/updateRooms',
             // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
@@ -171,7 +174,7 @@ function updateCapacity() {
                 port: serverport,
                 location: serverLocation,
                 difficulty,
-                playerAmount: users.length,
+                playerAmount: humanUsers,
                 playerMax: c.maxPlayers
             }
         }).catch((e) => {
@@ -277,11 +280,9 @@ function movePlayer(player) {
             deltaX *= dist / (50 + c.playerRadius);
         }
         if (!isNaN(deltaY)) {
-            player.lastY = player.target.y;
             player.y += deltaY;
         }
         if (!isNaN(deltaX)) {
-            player.lastX = player.target.x;
             player.x += deltaX;
         }
 
@@ -1134,6 +1135,7 @@ function balanceBots() {
             speed: 0
         });
         teams[bot.team].player_amount++;
+        botAmount++;
 
     } else if (users.length > botMax) {
         // for (let i = users.length - 1; i >= 0; --i) {     if (users[i].id == bot.id)
@@ -1148,7 +1150,7 @@ function balanceBots() {
 
                 listOfIds[users[i].id] = -1;
                 users.splice(i, 1);
-
+                botAmount--;
                 break;
             }
         }
@@ -1364,23 +1366,25 @@ function sendGoalAndAssist(scoringTeam){
     let scorer = findPlayerById(ball.id);
     let assister = findPlayerById(ball.former);
     try{
-        if(scorer && scorer.team==scoringTeam && scorer.serverId){
+        if(scorer && scorer.team==scoringTeam && !scorer.isBot){
             console.log('scorerId: ',scorer.serverId);
             axios({
                 method: 'post', url: url + '/updatestats',
                 // url: 'https://' + ipaddress + ':443/users/skinconfirm', //change this when
                 // deployed
                 data: {
+                    name: scorer.name,
                     serverId: scorer.serverId,
                     points: 15,
                 }
             });
         }
-        if(assister && assister.team==scoringTeam && assister.serverId && assister.serverId!=scorer.serverId){
+        if(assister && assister.team==scoringTeam && !assister.isBot){
             console.log('assister: ',assister.serverId);
             axios({
                 method: 'post', url: url + '/updatestats',
                 data: {
+                    name: assister.name,
                     serverId: assister.serverId,
                     points: 10,
                 }
@@ -1422,6 +1426,8 @@ function afkCheck() {
                 }
             }
         }else{
+            users[i].lastX = users[i].target.x;
+            users[i].lastY = users[i].target.y;
             users[i].isAFK=false;
         }
     }

@@ -13,6 +13,10 @@ module.exports = {
 
     // Canvas
     commercialCount: 8,
+    adCount: 3,
+    adIndex: 0 ,
+    overlayAdWidth: 0,
+    overlayAdHeight: 0,
     screenWidth: window.innerWidth,
     screenHeight: window.innerHeight,
     gameWidth: 0,
